@@ -1,3 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="cz.appsdevteam.gptom">
+
+  <queries>
+    <package android:name="com.globalpayments.atom" />
+    <package android:name="com.globalpayments.atom.dev" />
+  </queries>
 </manifest>

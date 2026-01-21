@@ -1,8 +1,3 @@
-
-import 'gptom_platform_interface.dart';
-
-class Gptom {
-  Future<String?> getPlatformVersion() {
-    return GptomPlatform.instance.getPlatformVersion();
-  }
-}
+export 'gptom_manager.dart';
+export 'models/models.dart';
+export 'result_codes.dart';
