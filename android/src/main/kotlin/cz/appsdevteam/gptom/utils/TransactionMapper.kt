@@ -3,6 +3,7 @@ package cz.appsdevteam.gptom.mappers
 import cn.nexgo.smartconnect.model.MerchantInfoEntity
 import cn.nexgo.smartconnect.model.TransactionResultV2Entity
 import cz.appsdevteam.gptom.mappers.MerchantInfoMapper
+import cz.appsdevteam.gptom.utils.DateUtils
 import cz.appsdevteam.gptom.JsonKeys
 
 object TransactionResultMapper {
@@ -21,7 +22,7 @@ object TransactionResultMapper {
         JsonKeys.merchantId to e.merchantID,
         JsonKeys.terminalId to e.terminalID,
 
-        JsonKeys.currencyCode to e.currencyCode,
+        JsonKeys.currencyCode to e.currencyCode?.toString(),
         JsonKeys.amount to e.amount,
         JsonKeys.tipAmount to e.tipAmount,
         JsonKeys.cashbackAmount to e.cashbackAmount,
@@ -34,8 +35,7 @@ object TransactionResultMapper {
         JsonKeys.referenceNumber to e.referenceNumber,
         JsonKeys.invoiceNumber to e.invoiceNumber,
 
-        JsonKeys.date to e.date,
-        JsonKeys.time to e.time,
+        JsonKeys.date to DateUtils.toISO8601(e.date, e.time),
 
         JsonKeys.emvAid to e.emvAid,
         JsonKeys.emvAppLabel to e.emvAppLabel,

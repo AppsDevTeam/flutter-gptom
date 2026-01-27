@@ -134,11 +134,7 @@ class _DemoHomeState extends State<DemoHome> {
   Future<void> _init() async {
     try {
       await GpTomManager.init(
-        GpTomInitOptions(
-          isDevelopment: _isDev,
-          debugLogs: true,
-          // iosRedirectUrl: 'myapp://gptom', // doplň podle své iOS appky
-        ),
+        GpTomInitOptions(isDevelopment: _isDev, debugLogs: true, iosRedirectUrl: 'adtgptom://callback'),
       );
       setState(() {
         _initialized = true;

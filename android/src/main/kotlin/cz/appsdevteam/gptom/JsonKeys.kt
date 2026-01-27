@@ -1,6 +1,18 @@
 package cz.appsdevteam.gptom
 
 object JsonKeys {
+    const val appVersion = "appVersion"
+    const val isLoggedIn = "isLoggedIn"
+    const val tid = "tid"
+    const val mid = "mid"
+    const val businessId = "businessId"
+    const val email = "email"
+    const val vat = "vat"
+    const val tipEnabled = "tipEnabled"
+    const val printerAvailable = "printerAvailable"
+    const val manualTransactionRestricted = "manualTransactionRestricted"
+    const val merchantLocationEntity = "merchantLocationEntity"
+
     const val isDevelopment = "isDevelopment"
     const val iosRedirectUrl = "iosRedirectUrl"
     const val debugLogs = "debugLogs"
@@ -58,7 +70,6 @@ object JsonKeys {
     const val invoiceNumber = "invoiceNumber"
 
     const val date = "date"
-    const val time = "time"
 
     const val emvAid = "emvAid"
     const val emvAppLable = "emvAppLable"
@@ -87,6 +98,13 @@ object JsonKeys {
     const val batchVoidNum = "batchVoidNum"
     const val batchVoidAmount = "batchVoidAmount"
 
+    const val totalCount = "totalCount"
+    const val totalAmount = "totalAmount"
+    const val saleCount = "saleCount"
+    const val saleAmount = "saleAmount"
+    const val voidCount = "voidCount"
+    const val voidAmount = "voidAmount"
+
     const val merchantInfo = "merchantInfo"
     const val cardHolderVerificationMethod = "cardHolderVerificationMethod"
 
@@ -103,4 +121,12 @@ object JsonKeys {
     const val exception = "exception"
 
     const val persistPending = "persistPending"
+
+    const val communicationId = "communicationId"
+    const val invalidCount = "invalidCount"
+    const val firstTransactionDate = "firstTransactionDate"
+    const val previousBatchDate = "previousBatchDate"
+    const val tipCount = "tipCount"
+    const val tipAverage = "tipAverage"
+    const val tipAveragePercentage = "tipAveragePercentage"
 }

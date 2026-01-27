@@ -3,6 +3,7 @@ package cz.appsdevteam.gptom.mappers
 import cn.nexgo.smartconnect.model.InquireResultEntity
 import cn.nexgo.smartconnect.model.MerchantInfoEntity
 import cz.appsdevteam.gptom.mappers.MerchantInfoMapper
+import cz.appsdevteam.gptom.utils.DateUtils
 import cz.appsdevteam.gptom.JsonKeys
 
 object InquireResultMapper {
@@ -34,8 +35,7 @@ object InquireResultMapper {
         JsonKeys.traceNumber to e.traceNumber,
         JsonKeys.invoiceNumber to e.invoiceNumber,
 
-        JsonKeys.date to e.date,
-        JsonKeys.time to e.time,
+        JsonKeys.date to DateUtils.toISO8601(e.date, e.time),
 
         JsonKeys.emvAid to e.emvAid,
         JsonKeys.emvAppLabel to e.emvAppLable,

@@ -1,7 +1,7 @@
 import 'package:gptom/utils/json_keys.dart';
 import 'package:gptom/utils/json_utils.dart';
 
-enum GpTomEventKind { sale, refund, cancel, closeBatch, detail, state, unknown }
+enum GpTomEventKind { sale, refund, cancel, closeBatch, detail, state, appStatus, unknown }
 
 class GpTomEvent {
   final GpTomEventKind kind;

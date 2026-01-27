@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:gptom/gptom.dart';
+import 'package:gptom/models/batch_result.dart';
 import 'package:gptom/models/inquire_result.dart';
+import 'package:gptom/utils/json_keys.dart';
 
 class GpTomManager {
   static const MethodChannel _methodChannel = MethodChannel('adt_gptom/methods');
@@ -29,8 +31,8 @@ class GpTomManager {
   static Stream<GpTomResult<GpTomTransactionResult>> get cancelResults =>
       _typedResults<GpTomTransactionResult>(kind: GpTomEventKind.cancel, parser: GpTomTransactionResult.fromJson);
 
-  static Stream<GpTomResult<GpTomTransactionResult>> get closeBatchResults =>
-      _typedResults<GpTomTransactionResult>(kind: GpTomEventKind.closeBatch, parser: GpTomTransactionResult.fromJson);
+  static Stream<GpTomResult<GpTomBatchResult>> get closeBatchResults =>
+      _typedResults<GpTomBatchResult>(kind: GpTomEventKind.closeBatch, parser: GpTomBatchResult.fromJson);
 
   static Stream<GpTomResult<GpTomStateResult>> get stateResults =>
       _typedResults<GpTomStateResult>(kind: GpTomEventKind.state, parser: GpTomStateResult.fromJson);
@@ -92,12 +94,12 @@ class GpTomManager {
 
   /// Android: calls stateRequest; iOS: not available -> returns PLATFORM_NOT_SUPPORTED.
   static Future<GpTomResult<void>> getState(String transactionId) async {
-    return _invoke<void>('getState', args: {'transactionId': transactionId});
+    return _invoke<void>('getState', args: {JsonKeys.transactionId: transactionId});
   }
 
   /// Android: TransactionInquire; iOS: transactionDetail deeplink.
   static Future<GpTomResult<void>> getDetail(String transactionId) async {
-    return _invoke<void>('getDetail', args: {'transactionId': transactionId});
+    return _invoke<void>('getDetail', args: {JsonKeys.transactionId: transactionId});
   }
 
   static Future<GpTomResult<void>> closeBatch() async {

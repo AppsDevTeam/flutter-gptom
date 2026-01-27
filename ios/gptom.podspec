@@ -5,17 +5,19 @@
 Pod::Spec.new do |s|
   s.name             = 'gptom'
   s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.summary          = 'GP Tom Plugin for Flutter'
   s.description      = <<-DESC
-A new Flutter plugin project.
+GP Tom Plugin for Flutter.
+
+This plugin bundles GP tom iOS SDK (MIT licensed). See THIRD_PARTY_NOTICES.md.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'http://appsdevteam.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Apps Dev Team' => 'martinf@appsdevteam.com' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '13.0'
+  s.platform = :ios, '15.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

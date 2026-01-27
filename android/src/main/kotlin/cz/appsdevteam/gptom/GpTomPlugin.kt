@@ -16,8 +16,10 @@ import cz.appsdevteam.gptom.mappers.InquireResultMapper
 import cz.appsdevteam.gptom.mappers.TransactionResultMapper
 import cz.appsdevteam.gptom.mappers.RegisterResultMapper
 import cz.appsdevteam.gptom.mappers.StateResultMapper
+import cz.appsdevteam.gptom.mappers.BatchMapper
 import cz.appsdevteam.gptom.models.PluginResponse
 import cz.appsdevteam.gptom.models.TransactionType
+import cz.appsdevteam.gptom.models.ResultCodes
 
 class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
@@ -49,7 +51,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                 sendEvent(
                     kind = KIND_INFO,
                     transactionId = null,
-                    response = PluginResponse.Error("internalError", msg)
+                    response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, msg)
                 )
             },
         )
@@ -136,20 +138,20 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
 
                         override fun onRegisterV2Result(resultJson: String?) {
                             if (resultJson.isNullOrBlank()) {
-                                sendMethodResult(result, PluginResponse.Error("internalError", "Register returned empty result"))
+                                sendMethodResult(result, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Register returned empty result"))
                                 return
                             }
 
                             val parsed = try {
                                 gson.fromJson(resultJson, cn.nexgo.smartconnect.model.RegisterResultV2Entity::class.java)
                             } catch (e: Exception) {
-                                sendMethodResult(result, PluginResponse.Error("internalError", "Failed to parse: ${e.message}"))
+                                sendMethodResult(result, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Failed to parse: ${e.message}"))
                                 return
                             }
 
                             val txId = parsed.transactionId
                             if (txId.isNullOrBlank()) {
-                                sendMethodResult(result, PluginResponse.Error("internalError", "TransactionId is null/blank"))
+                                sendMethodResult(result, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "TransactionId is null/blank"))
                                 return
                             }
 
@@ -160,7 +162,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                         }
                     })
                 } catch (e: Exception) {
-                    sendMethodResult(result, PluginResponse.Error("internalError", "register failed: ${e.message}"))
+                    sendMethodResult(result, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "register failed: ${e.message}"))
                 }
             },
             onError = { error -> sendMethodResult(result, error) }
@@ -176,28 +178,28 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
         val txType = TransactionType.fromInt(typeInt)
 
         if (txId.isNullOrBlank()) {
-            sendMethodResult(result, PluginResponse.Error("invalidArgument", "${JsonKeys.transactionId} is required"))
+            sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "${JsonKeys.transactionId} is required"))
             return
         }
         if (txType == null) {
-            sendMethodResult(result, PluginResponse.Error("invalidArgument", "Unknown or missing ${JsonKeys.transactionType}"))
+            sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "Unknown or missing ${JsonKeys.transactionType}"))
             return
         }
 
         val amountLong = (args[JsonKeys.amount] as? Number)?.toLong()
         if ((txType == TransactionType.SALE || txType == TransactionType.REFUND) && (amountLong == null || amountLong < 0)) {
-            sendMethodResult(result, PluginResponse.Error("invalidArgument", "Amount required for sale/refund"))
+            sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "Amount required for sale/refund"))
             return
         }
 
         if (txType == TransactionType.CANCEL) {
             val cancelMode = (args[JsonKeys.cancelMode] as? Number)?.toInt()
             if (cancelMode == null || (cancelMode != 1 && cancelMode != 2)) {
-                sendMethodResult(result, PluginResponse.Error("invalidArgument", "CancelMode must be 1 or 2"))
+                sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "CancelMode must be 1 or 2"))
                 return
             }
             if (cancelMode == 2 && (args[JsonKeys.originTransactionId] as? String).isNullOrBlank()) {
-                sendMethodResult(result, PluginResponse.Error("invalidArgument", "OriginTransactionId required for mode 2"))
+                sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "OriginTransactionId required for mode 2"))
                 return
             }
         }
@@ -236,11 +238,16 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                         override fun onTransactionV2Result(resultJson: String?) {
                             try {
                                 val parsed = gson.fromJson(resultJson, cn.nexgo.smartconnect.model.TransactionResultV2Entity::class.java)
-                                if (txType != TransactionType.CLOSE_BATCH) pendingStore.clear()
-
-                                sendEvent(txType.kind, txId, response = PluginResponse.Success(TransactionResultMapper.toMap(parsed)))
+                                
+                                val mapperResult = if (txType == TransactionType.CLOSE_BATCH) {
+                                    BatchMapper.toMap(parsed)
+                                } else {
+                                    pendingStore.clear()
+                                    TransactionResultMapper.toMap(parsed)
+                                }
+                                sendEvent(txType.kind, txId, response = PluginResponse.Success(mapperResult))
                             } catch (e: Exception) {
-                                sendEvent(txType.kind, txId, response = PluginResponse.Error("internalError", "Parse error: ${e.message}"))
+                                sendEvent(txType.kind, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Parse error: ${e.message}"))
                             } finally {
                                 serviceClient.markInFlightEnd()
                             }
@@ -248,7 +255,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                     })
                 } catch (e: Exception) {
                     serviceClient.markInFlightEnd()
-                    sendEvent(txType.kind, txId, response = PluginResponse.Error("internalError", "Failed: ${e.message}"))
+                    sendEvent(txType.kind, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Failed: ${e.message}"))
                 }
             },
             onError = { error -> sendEvent(txType.kind, txId, response = error) }
@@ -257,7 +264,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
 
     private fun getState(call: MethodCall, result: MethodChannel.Result) {
         val args = call.arguments as? Map<*, *> ?: emptyMap<Any, Any>()
-        val txId = args[JsonKeys.transactionId] as? String ?: return sendMethodResult(result, PluginResponse.Error("invalidArgument", "txId missing"))
+        val txId = args[JsonKeys.transactionId] as? String ?: return sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "txId missing"))
 
         sendMethodResult(result, PluginResponse.Success(null))
 
@@ -269,14 +276,14 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                         override fun onStateResult(resultJson: String?) {
                             try {
                                 if (resultJson.isNullOrBlank()) {
-                                    sendEvent(KIND_STATE, txId, response = PluginResponse.Error("internalError", "Empty result"))
+                                    sendEvent(KIND_STATE, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Empty result"))
                                     return
                                 }
                                 val parsed = gson.fromJson(resultJson, cn.nexgo.smartconnect.model.StateResultEntity::class.java)
                                 sendEvent(KIND_STATE, txId, response = PluginResponse.Success(StateResultMapper.toMap(parsed)))
                                 serviceClient.touch()
                             } catch (e: Exception) {
-                                sendEvent(KIND_STATE, txId, response = PluginResponse.Error("internalError", e.message?: "Unknown error"))
+                                sendEvent(KIND_STATE, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, e.message?: "Unknown error"))
                             } finally {
                                 serviceClient.markInFlightEnd()
                             }
@@ -284,7 +291,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                     })
                 } catch (e: Exception) {
                     serviceClient.markInFlightEnd()
-                    sendEvent(KIND_STATE, txId, response = PluginResponse.Error("internalError", e.message?: "Unknown error"))
+                    sendEvent(KIND_STATE, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, e.message?: "Unknown error"))
                 }
             },
             onError = { error -> sendEvent(KIND_STATE, txId, response = error) }
@@ -293,7 +300,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
 
     private fun getDetail(call: MethodCall, result: MethodChannel.Result) {
         val args = call.arguments as? Map<*, *> ?: emptyMap<Any, Any>()
-        val txId = args[JsonKeys.transactionId] as? String ?: return sendMethodResult(result, PluginResponse.Error("invalidArgument", "txId missing"))
+        val txId = args[JsonKeys.transactionId] as? String ?: return sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "txId missing"))
 
         sendMethodResult(result, PluginResponse.Success(null))
 
@@ -307,7 +314,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                                 sendEvent(KIND_DETAIL, txId, response = PluginResponse.Success(InquireResultMapper.toMap(p0)))
                                 serviceClient.touch()
                             } catch (e: Exception) {
-                                sendEvent(KIND_DETAIL, txId, response = PluginResponse.Error("internalError", e.message?: "Unknown error"))
+                                sendEvent(KIND_DETAIL, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, e.message?: "Unknown error"))
                             } finally {
                                 serviceClient.markInFlightEnd()
                             }
@@ -315,7 +322,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                     })
                 } catch (e: Exception) {
                     serviceClient.markInFlightEnd()
-                    sendEvent(KIND_DETAIL, txId, response = PluginResponse.Error("internalError", e.message?: "Unknown error"))
+                    sendEvent(KIND_DETAIL, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, e.message?: "Unknown error"))
                 }
             },
             onError = { error -> sendEvent(KIND_DETAIL, txId, response = error) }
@@ -323,8 +330,8 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
     }
 
     private fun validatePluginState(): PluginResponse.Error? {
-        if (!isInitialized) return PluginResponse.Error("notInitialized", "Call GpTomManager.init() first")
-        if (!serviceClient.isInstalled()) return PluginResponse.Error("notInstalled", "GP tom app is not installed")
+        if (!isInitialized) return PluginResponse.Error(ResultCodes.NOT_INITIALIZED, "Call GpTomManager.init() first")
+        if (!serviceClient.isInstalled()) return PluginResponse.Error(ResultCodes.NOT_INSTALLED, "GP tom app is not installed")
         return null
     }
 
@@ -355,5 +362,6 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
         const val KIND_INFO = "info"
         const val KIND_STATE = "state"
         const val KIND_DETAIL = "detail"
+        const val KIND_APP_STATUS = "appStatus"
     }
 }

@@ -24,7 +24,7 @@ class GpTomTransactionResult {
   final int? transactionType;
   final String? merchantId;
   final String? terminalId;
-  final int? currencyCode;
+  final String? currencyCode;
   final int? amount;
   final int? tipAmount;
   final int? cashbackAmount;
@@ -38,9 +38,8 @@ class GpTomTransactionResult {
   final String? invoiceNumber;
 
   final String? date;
-  final String? time;
 
-  final String? emvAId;
+  final String? emvAid;
   final String? emvAppLabel;
 
   final String? sequenceNumber;
@@ -85,8 +84,7 @@ class GpTomTransactionResult {
     required this.referenceNumber,
     required this.invoiceNumber,
     required this.date,
-    required this.time,
-    required this.emvAId,
+    required this.emvAid,
     required this.emvAppLabel,
     required this.sequenceNumber,
     required this.batchNumber,
@@ -123,7 +121,7 @@ class GpTomTransactionResult {
       transactionType: JsonUtils.asInt(json[JsonKeys.transactionType]),
       merchantId: JsonUtils.asString(json[JsonKeys.merchantId]),
       terminalId: JsonUtils.asString(json[JsonKeys.terminalId]),
-      currencyCode: JsonUtils.asInt(json[JsonKeys.currencyCode]),
+      currencyCode: JsonUtils.asString(json[JsonKeys.currencyCode]),
       amount: JsonUtils.asInt(json[JsonKeys.amount]),
       tipAmount: JsonUtils.asInt(json[JsonKeys.tipAmount]),
       cashbackAmount: JsonUtils.asInt(json[JsonKeys.cashbackAmount]),
@@ -134,8 +132,7 @@ class GpTomTransactionResult {
       referenceNumber: JsonUtils.asString(json[JsonKeys.referenceNumber]),
       invoiceNumber: JsonUtils.asString(json[JsonKeys.invoiceNumber]),
       date: JsonUtils.asString(json[JsonKeys.date]),
-      time: JsonUtils.asString(json[JsonKeys.time]),
-      emvAId: JsonUtils.asString(json[JsonKeys.emvAid]),
+      emvAid: JsonUtils.asString(json[JsonKeys.emvAid]),
       emvAppLabel: JsonUtils.asString(json[JsonKeys.emvAppLabel]),
       sequenceNumber: JsonUtils.asString(json[JsonKeys.sequenceNumber]),
       batchNumber: JsonUtils.asString(json[JsonKeys.batchNumber]),
@@ -180,8 +177,7 @@ class GpTomTransactionResult {
       JsonKeys.referenceNumber: referenceNumber,
       JsonKeys.invoiceNumber: invoiceNumber,
       JsonKeys.date: date,
-      JsonKeys.time: time,
-      JsonKeys.emvAid: emvAId,
+      JsonKeys.emvAid: emvAid,
       JsonKeys.emvAppLabel: emvAppLabel,
       JsonKeys.sequenceNumber: sequenceNumber,
       JsonKeys.batchNumber: batchNumber,

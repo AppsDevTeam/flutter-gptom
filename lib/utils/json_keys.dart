@@ -1,6 +1,18 @@
 class JsonKeys {
   const JsonKeys._();
 
+  static const String appVersion = "appVersion";
+  static const String isLoggedIn = "isLoggedIn";
+  static const String tid = "tid";
+  static const String mid = "mid";
+  static const String businessId = "businessId";
+  static const String email = "email";
+  static const String vat = "vat";
+  static const String tipEnabled = "tipEnabled";
+  static const String printerAvailable = "printerAvailable";
+  static const String manualTransactionRestricted = "manualTransactionRestricted";
+  static const String merchantLocationEntity = "merchantLocationEntity";
+
   static const String isDevelopment = 'isDevelopment';
   static const String iosRedirectUrl = 'iosRedirectUrl';
   static const String debugLogs = 'debugLogs';
@@ -58,7 +70,6 @@ class JsonKeys {
   static const String invoiceNumber = 'invoiceNumber';
 
   static const String date = 'date';
-  static const String time = 'time';
 
   static const String emvAid = 'emvAid';
   static const String emvAppLable = 'emvAppLable';
@@ -87,6 +98,13 @@ class JsonKeys {
   static const String batchVoidNum = 'batchVoidNum';
   static const String batchVoidAmount = 'batchVoidAmount';
 
+  static const String totalCount = 'totalCount';
+  static const String totalAmount = 'totalAmount';
+  static const String saleCount = 'saleCount';
+  static const String saleAmount = 'saleAmount';
+  static const String voidCount = 'voidCount';
+  static const String voidAmount = 'voidAmount';
+
   static const String merchantInfo = 'merchantInfo';
   static const String cardHolderVerificationMethod = 'cardHolderVerificationMethod';
 
@@ -103,4 +121,12 @@ class JsonKeys {
   static const String exception = 'exception';
 
   static const String persistPending = 'persistPending';
+
+  static const String communicationId = 'communicationId';
+  static const String invalidCount = 'invalidCount';
+  static const String firstTransactionDate = 'firstTransactionDate';
+  static const String previousBatchDate = 'previousBatchDate';
+  static const String tipCount = 'tipCount';
+  static const String tipAverage = 'tipAverage';
+  static const String tipAveragePercentage = 'tipAveragePercentage';
 }

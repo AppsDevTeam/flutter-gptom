@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - gptom (0.0.1):
+    - Flutter
+  - integration_test (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - gptom (from `.symlinks/plugins/gptom/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  gptom:
+    :path: ".symlinks/plugins/gptom/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  gptom: 9c5c7965a846877e9de54b169ea20a6c50daca66
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+
+PODFILE CHECKSUM: 35426d646430b483caffc792fc5b5d1a557ccb06
+
+COCOAPODS: 1.16.2

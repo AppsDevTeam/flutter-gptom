@@ -7,4 +7,11 @@ enum GpTomResultCode {
   timeout,
   serviceBindFailed,
   internalError,
+  failed,
+  networkError,
+  invalidClientId,
+  merchantInfoMissing,
+  failedTapToPay,
+  failedToCloseBatch,
+  invalidDeeplink,
 }

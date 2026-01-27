@@ -19,6 +19,19 @@ class JsonUtils {
     return asInt(v) ?? fallback;
   }
 
+  static double? asDouble(Object? v) {
+    if (v == null) return null;
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  static double asRequiredDouble(Object? v, {double fallback = 0.0}) {
+    return asDouble(v) ?? fallback;
+  }
+
   static bool? asBool(Object? v) {
     if (v == null) return null;
     if (v is bool) return v;
@@ -31,6 +44,10 @@ class JsonUtils {
       if (v == 0) return false;
     }
     return null;
+  }
+
+  static bool asRequiredBool(Object? v, {bool fallback = false}) {
+    return asBool(v) ?? fallback;
   }
 
   static DateTime? asDateTime(Object? v) {

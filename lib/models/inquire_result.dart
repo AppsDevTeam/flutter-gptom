@@ -32,7 +32,6 @@ class GpTomInquireResult {
   final String? invoiceNumber;
 
   final String? date;
-  final String? time;
 
   final String? emvAid;
   final String? emvAppLable;
@@ -67,7 +66,6 @@ class GpTomInquireResult {
     required this.traceNumber,
     required this.invoiceNumber,
     required this.date,
-    required this.time,
     required this.emvAid,
     required this.emvAppLable,
     required this.sequenceNumber,
@@ -106,7 +104,6 @@ class GpTomInquireResult {
       traceNumber: JsonUtils.asString(json[JsonKeys.traceNumber]),
       invoiceNumber: JsonUtils.asString(json[JsonKeys.invoiceNumber]),
       date: JsonUtils.asString(json[JsonKeys.date]),
-      time: JsonUtils.asString(json[JsonKeys.time]),
       emvAid: JsonUtils.asString(json[JsonKeys.emvAid]),
       emvAppLable: JsonUtils.asString(json[JsonKeys.emvAppLable]),
       sequenceNumber: JsonUtils.asString(json[JsonKeys.sequenceNumber]),
@@ -142,7 +139,6 @@ class GpTomInquireResult {
     JsonKeys.traceNumber: traceNumber,
     JsonKeys.invoiceNumber: invoiceNumber,
     JsonKeys.date: date,
-    JsonKeys.time: time,
     JsonKeys.emvAid: emvAid,
     JsonKeys.emvAppLable: emvAppLable,
     JsonKeys.sequenceNumber: sequenceNumber,
