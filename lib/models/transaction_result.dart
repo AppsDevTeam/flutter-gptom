@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:gptom/models/card_holder_verification_method.dart';
-import 'package:gptom/models/card_product.dart';
+import 'package:gptom/models/enums/card_holder_verification_method.dart';
+import 'package:gptom/models/enums/card_product.dart';
 import 'package:gptom/models/error_result.dart';
 import 'package:gptom/models/merchant_info.dart';
 import 'package:gptom/utils/json_keys.dart';

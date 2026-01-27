@@ -8,6 +8,8 @@ import cn.nexgo.smartconnect.listener.IStateResultListener
 import cn.nexgo.smartconnect.listener.ITransactionRegisterListener
 import cn.nexgo.smartconnect.listener.ITransactionResultListener
 import com.google.gson.Gson
+import cz.appsdevteam.gptom.core.Channels
+import cz.appsdevteam.gptom.core.JsonKeys
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -20,6 +22,9 @@ import cz.appsdevteam.gptom.mappers.BatchMapper
 import cz.appsdevteam.gptom.models.PluginResponse
 import cz.appsdevteam.gptom.models.TransactionType
 import cz.appsdevteam.gptom.models.ResultCodes
+import cz.appsdevteam.gptom.storage.PendingStore
+import cz.appsdevteam.gptom.support.GpTomLog
+import kotlin.jvm.java
 
 class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 

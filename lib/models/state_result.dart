@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:gptom/models/enums/transaction_state.dart';
 import 'package:gptom/models/error_result.dart';
-import 'package:gptom/models/transaction_state.dart';
 import 'package:gptom/utils/json_keys.dart';
 import 'package:gptom/utils/json_utils.dart';
 

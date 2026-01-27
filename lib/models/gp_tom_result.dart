@@ -1,4 +1,4 @@
-import 'package:gptom/result_codes.dart';
+import 'package:gptom/models/enums/result_codes.dart';
 import 'package:gptom/utils/json_keys.dart';
 import 'package:gptom/utils/json_utils.dart';
 

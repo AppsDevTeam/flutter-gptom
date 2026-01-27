@@ -1,5 +1,7 @@
-export 'card_holder_verification_method.dart';
-export 'card_product.dart';
+export 'enums/card_holder_verification_method.dart';
+export 'enums/card_product.dart';
+export 'enums/result_codes.dart';
+export 'enums/transaction_state.dart';
 export 'error_result.dart';
 export 'gp_tom_event.dart';
 export 'gp_tom_result.dart';
@@ -11,4 +13,3 @@ export 'register_result.dart';
 export 'state_result.dart';
 export 'transaction_request.dart';
 export 'transaction_result.dart';
-export 'transaction_state.dart';

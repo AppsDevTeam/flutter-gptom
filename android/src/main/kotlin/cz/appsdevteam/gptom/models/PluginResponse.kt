@@ -1,6 +1,6 @@
 package cz.appsdevteam.gptom.models
 
-import cz.appsdevteam.gptom.JsonKeys
+import cz.appsdevteam.gptom.core.JsonKeys
 import cz.appsdevteam.gptom.models.ResultCodes
 
 sealed class PluginResponse {
