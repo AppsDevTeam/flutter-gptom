@@ -27,16 +27,17 @@ class _DemoHomeState extends State<DemoHome> {
   bool _isDev = true;
   bool _initialized = false;
 
-  final _amountCtrl = TextEditingController(text: '100');
+  final _amountCtrl = TextEditingController(text: '1');
   final _tipCtrl = TextEditingController(text: '');
   final _clientIdCtrl = TextEditingController(text: '');
   final _originRefCtrl = TextEditingController(text: 'flutter_ref_1');
   final _originTxCtrl = TextEditingController(text: '');
+  final _transactionIdCtrl = TextEditingController(text: '');
 
   String? _transactionId; // získané z register
 
   GpTomPaymentMethod? _paymentMethod = GpTomPaymentMethod.card;
-  bool _printByPaymentApp = true;
+  bool _printByPaymentApp = false;
   bool _tipCollect = false;
 
   GpTomCancelMode _cancelMode = GpTomCancelMode.lastTransaction;
@@ -80,6 +81,12 @@ class _DemoHomeState extends State<DemoHome> {
       _addLog('EVENT DETAIL: ${_fmt(r)}\nDATA: ${r.data}');
     });
 
+    _transactionIdCtrl.addListener(() {
+      setState(() {
+        _transactionId = _transactionIdCtrl.text;
+      });
+    });
+
     // optional raw events (debug)
     // GpTomManager.events.listen((e) => _addLog('RAW EVENT: $e'));
   }
@@ -98,6 +105,7 @@ class _DemoHomeState extends State<DemoHome> {
     _clientIdCtrl.dispose();
     _originRefCtrl.dispose();
     _originTxCtrl.dispose();
+    _transactionIdCtrl.dispose();
     super.dispose();
   }
 
@@ -134,7 +142,7 @@ class _DemoHomeState extends State<DemoHome> {
   Future<void> _init() async {
     try {
       await GpTomManager.init(
-        GpTomInitOptions(isDevelopment: _isDev, debugLogs: true, iosRedirectUrl: 'adtgptom://callback'),
+        GpTomInitOptions(isDevelopment: _isDev, debugLogs: true, iosRedirectScheme: 'adtgptom://callback'),
       );
       setState(() {
         _initialized = true;
@@ -163,10 +171,8 @@ class _DemoHomeState extends State<DemoHome> {
       final tid = res.data!.transactionId;
 
       _originTxCtrl.text = tid ?? "";
+      _transactionIdCtrl.text = tid ?? "";
 
-      setState(() {
-        _transactionId = tid;
-      });
       _addLog('REGISTER -> transactionId=$_transactionId');
     }
   }
@@ -269,7 +275,7 @@ class _DemoHomeState extends State<DemoHome> {
       paymentMethod: _paymentMethod,
     );
 
-    await _call(() => GpTomManager.cancel(req));
+    await _call(() => GpTomManager.storno(req));
   }
 
   Future<void> _state() async {
@@ -344,26 +350,30 @@ class _DemoHomeState extends State<DemoHome> {
                     const SizedBox(height: 12),
 
                     // transactionId display
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            const Text('transactionId: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                            Expanded(child: SelectableText(_transactionId ?? '—')),
-                            IconButton(
-                              onPressed: () {
-                                setState(() => _transactionId = null);
-                                _addLog('transactionId cleared in UI');
-                              },
-                              icon: const Icon(Icons.clear),
-                              tooltip: 'Clear transactionId',
-                            ),
-                          ],
-                        ),
-                      ),
+                    TextField(
+                      controller: _transactionIdCtrl,
+                      decoration: const InputDecoration(labelText: 'transactionId', border: OutlineInputBorder()),
                     ),
 
+                    // Card(
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.all(12),
+                    //     child: Row(
+                    //       children: [
+                    //         const Text('transactionId: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                    //         Expanded(child: SelectableText(_transactionId ?? '—')),
+                    //         IconButton(
+                    //           onPressed: () {
+                    //             setState(() => _transactionId = null);
+                    //             _addLog('transactionId cleared in UI');
+                    //           },
+                    //           icon: const Icon(Icons.clear),
+                    //           tooltip: 'Clear transactionId',
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // ),
                     const SizedBox(height: 12),
 
                     Row(

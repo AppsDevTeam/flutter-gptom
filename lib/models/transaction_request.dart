@@ -79,7 +79,7 @@ class GpTomTransactionRequest {
     this.currencyCode,
     this.paymentMethod,
     this.cancelMode,
-  }) : printByPaymentApp = printByPaymentApp ?? true;
+  }) : printByPaymentApp = printByPaymentApp ?? false;
 
   /// Convenience: sale.
   factory GpTomTransactionRequest.sale({

@@ -84,7 +84,7 @@ class GpTomManager {
   }*/
 
   /// Convenience wrapper for CANCEL. Equivalent to calling [transaction] with a storno request.
-  static Future<GpTomResult<void>> cancel(GpTomTransactionRequest request) async {
+  static Future<GpTomResult<void>> storno(GpTomTransactionRequest request) async {
     if (request.transactionType != GpTomTransactionType.storno) {
       return GpTomResult(code: GpTomResultCode.invalidArgument, message: 'Request.type must be storno');
     }

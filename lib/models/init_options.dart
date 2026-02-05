@@ -7,18 +7,18 @@ class GpTomInitOptions {
   /// Otherwise `com.globalpayments.atom`.
   final bool isDevelopment;
 
-  /// iOS redirect URL that GP tom will call back to (e.g. `myapp://gptom`).
+  /// iOS redirect scheme that GP tom will call back to (e.g. `myapp://gptom`).
   ///
   /// You must register the scheme in your iOS app.
-  final String? iosRedirectUrl;
+  final String? iosRedirectScheme;
 
   final bool debugLogs;
 
-  const GpTomInitOptions({this.isDevelopment = false, this.iosRedirectUrl, this.debugLogs = false});
+  const GpTomInitOptions({this.isDevelopment = false, this.iosRedirectScheme, this.debugLogs = false});
 
   Map<String, dynamic> toJson() => {
     JsonKeys.isDevelopment: isDevelopment,
-    JsonKeys.iosRedirectUrl: iosRedirectUrl,
+    JsonKeys.iosRedirectScheme: iosRedirectScheme,
     JsonKeys.debugLogs: debugLogs,
   };
 }

@@ -14,7 +14,7 @@ object JsonKeys {
     const val merchantLocationEntity = "merchantLocationEntity"
 
     const val isDevelopment = "isDevelopment"
-    const val iosRedirectUrl = "iosRedirectUrl"
+    const val iosRedirectScheme = "iosRedirectScheme"
     const val debugLogs = "debugLogs"
 
     const val kind = "kind"

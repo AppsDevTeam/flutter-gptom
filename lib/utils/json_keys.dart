@@ -14,7 +14,7 @@ class JsonKeys {
   static const String merchantLocationEntity = "merchantLocationEntity";
 
   static const String isDevelopment = 'isDevelopment';
-  static const String iosRedirectUrl = 'iosRedirectUrl';
+  static const String iosRedirectScheme = 'iosRedirectScheme';
   static const String debugLogs = 'debugLogs';
 
   static const String kind = 'kind';
