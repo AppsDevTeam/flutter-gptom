@@ -1,10 +1,3 @@
-//
-//  Deeplink.swift
-//  deeplinks
-//
-//  Created by Jan Švec on 13.03.2024.
-//
-
 import Foundation
 
 public enum Deeplink: Sendable {
@@ -15,7 +8,41 @@ public enum Deeplink: Sendable {
     case closeBatch(CloseBatchParams)
     case batchDetail(BatchDetailParams)
     case login(LoginParams)
+    case logout(LogoutParams)
+    case changePassword(ChangePasswordParams)
     case status(StatusParams)
+
+    public var clientID: String? {
+        switch self {
+        case let .createTransaction(params):
+            params.clientID
+        case let .cancelTransaction(params):
+            params.clientID
+        case let .refundTransaction(params):
+            params.clientID
+        case let .closeBatch(params):
+            params.clientID
+        default:
+            nil
+        }
+    }
+
+    public var redirectUrl: String? {
+        switch self {
+        case let .createTransaction(params):
+            params.redirectUrl
+        case let .cancelTransaction(params):
+            params.redirectUrl
+        case let .refundTransaction(params):
+            params.redirectUrl
+        case let .status(params):
+            params.redirectUrl
+        case let .closeBatch(params):
+            params.redirectUrl
+        default:
+            nil
+        }
+    }
 
     public static func from(url: URL) -> Deeplink? {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -37,6 +64,10 @@ public enum Deeplink: Sendable {
             return BatchDetailParams(params: params).flatMap { .batchDetail($0) }
         } else if urlString.contains("login") {
             return LoginParams(params: params).flatMap { .login($0) }
+        } else if urlString.contains("logout") {
+            return LogoutParams(params: params).flatMap { .logout($0) }
+        } else if urlString.contains("change-password") {
+            return ChangePasswordParams(params: params).flatMap { .changePassword($0) }
         } else if urlString.contains("status") {
             return StatusParams(params: params).flatMap { .status($0) }
         } else {
@@ -54,46 +85,15 @@ public enum Deeplink: Sendable {
         return items
     }
 
-    public var clientID: String? {
-        switch self {
-        case .createTransaction(let params):
-            return params.clientID
-        case .cancelTransaction(let params):
-            return params.clientID
-        case .refundTransaction(let params):
-            return params.clientID
-        case .closeBatch(let params):
-            return params.clientID
-        default:
-            return nil
-        }
-    }
-
-    public var redirectUrl: String? {
-        switch self {
-        case .createTransaction(let params):
-            return params.redirectUrl
-        case .cancelTransaction(let params):
-            return params.redirectUrl
-        case .refundTransaction(let params):
-            return params.redirectUrl
-        case .status(let params):
-            return params.redirectUrl
-        case .closeBatch(let params):
-            return params.redirectUrl
-        default:
-            return nil
-        }
-    }
 }
 
-// gptom://transaction/refund
+/// gptom://transaction/refund
 public typealias RefundTransactionParams = CreateTransactionParams
 
-// gptom://transaction/create
+/// gptom://transaction/create
 public struct CreateTransactionParams: Sendable {
-    // optional id that can be used to access transaction detail instead of amsId.
-    // can only be used locally on the device that created the transaction
+    /// optional id that can be used to access transaction detail instead of amsId.
+    /// can only be used locally on the device that created the transaction
     public let requestID: String?
 
     public let amount: Amount
@@ -123,8 +123,8 @@ public struct CreateTransactionParams: Sendable {
         clientPhone: String? = nil,
         clientEmail: String? = nil,
         orderId: String? = nil,
-        transactionType: TransactionType? = nil)
-    {
+        transactionType: TransactionType? = nil
+    ) {
         self.requestID = requestID
         self.amount = amount
         self.referenceNumber = referenceNumber
@@ -141,28 +141,31 @@ public struct CreateTransactionParams: Sendable {
     }
 
     init?(params: [String: String]) {
-        guard let amount = params["amount"].flatMap({ Int64($0) }) else { return nil }
+        guard let amount = params["amount"].flatMap({ Int64($0) }) else {
+            return nil
+        }
+
         self.amount = Decimal(amount) / 100
 
-        requestID = params["requestID"]
-        clientID = params["clientID"]
-        referenceNumber = params["originReferenceNum"]
-        printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
-        tipAmount = params["tipAmount"].flatMap { Decimal(Int64($0) ?? 0) / 100 }
-        redirectUrl = params["redirectUrl"]
-        tipCollect = params["tipCollect"].flatMap { Bool($0) }
-        preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }
-        clientPhone = params["clientPhone"]
-        clientEmail = params["clientEmail"]
-        orderId = nil
-        transactionType = params["transactionType"].flatMap { TransactionType(rawValue: $0) }
+        self.requestID = params["requestID"]
+        self.clientID = params["clientID"]
+        self.referenceNumber = params["originReferenceNum"]
+        self.printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
+        self.tipAmount = params["tipAmount"].flatMap { Decimal(Int64($0) ?? 0) / 100 }
+        self.redirectUrl = params["redirectUrl"]
+        self.tipCollect = params["tipCollect"].flatMap { Bool($0) }
+        self.preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }
+        self.clientPhone = params["clientPhone"]
+        self.clientEmail = params["clientEmail"]
+        self.orderId = nil
+        self.transactionType = params["transactionType"].flatMap { TransactionType(rawValue: $0) }
     }
 }
 
-// gptom://transaction/cancel
+/// gptom://transaction/cancel
 public struct CancelTransactionParams: Sendable {
-    // optional id that can be used to access transaction detail instead of amsId.
-    // can only be used locally on the device that created the transaction
+    /// optional id that can be used to access transaction detail instead of amsId.
+    /// can only be used locally on the device that created the transaction
     public let requestID: String?
 
     public let clientID: String?
@@ -183,8 +186,8 @@ public struct CancelTransactionParams: Sendable {
         preferableReceiptType: ReceiptOption? = nil,
         clientPhone: String? = nil,
         clientEmail: String? = nil,
-        orderId: String? = nil)
-    {
+        orderId: String? = nil
+    ) {
         self.requestID = requestID
         self.clientID = clientID
         self.printByPaymentApp = printByPaymentApp
@@ -196,32 +199,35 @@ public struct CancelTransactionParams: Sendable {
     }
 
     init?(params: [String: String]) {
-        clientID = params["clientID"]
+        self.clientID = params["clientID"]
 
-        guard let amsID = params["amsID"] else { return nil }
+        guard let amsID = params["amsID"] else {
+            return nil
+        }
+
         self.amsID = amsID
 
-        requestID = params["requestID"]
+        self.requestID = params["requestID"]
 
-        redirectUrl = params["redirectUrl"]
-        printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
+        self.redirectUrl = params["redirectUrl"]
+        self.printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
 
-        preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }
-        clientPhone = params["clientPhone"]
-        clientEmail = params["clientEmail"]
+        self.preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }
+        self.clientPhone = params["clientPhone"]
+        self.clientEmail = params["clientEmail"]
     }
 }
 
-// gptom://transaction/detail
+/// gptom://transaction/detail
 public struct TransactionDetailParams: Sendable {
     public let amsID: String?
     public let requestID: String?
 
     public init?(params: [String: String]) {
-        amsID = params["amsID"]
-        requestID = params["requestID"]
+        self.amsID = params["amsID"]
+        self.requestID = params["requestID"]
 
-        if amsID == nil && requestID == nil {
+        if amsID == nil, requestID == nil {
             return nil
         }
     }
@@ -232,7 +238,7 @@ public struct TransactionDetailParams: Sendable {
     }
 }
 
-// gptom://batch/close
+/// gptom://batch/close
 public struct CloseBatchParams: Sendable {
     public let clientID: String?
     public let redirectUrl: String?
@@ -242,13 +248,14 @@ public struct CloseBatchParams: Sendable {
     public let clientPhone: String?
     public let clientEmail: String?
 
-    public init(clientID: String?,
-                redirectUrl: String?,
-                printByPaymentApp: Bool?,
-                preferableReceiptType: ReceiptOption?,
-                clientPhone: String?,
-                clientEmail: String?)
-    {
+    public init(
+        clientID: String?,
+        redirectUrl: String?,
+        printByPaymentApp: Bool?,
+        preferableReceiptType: ReceiptOption?,
+        clientPhone: String?,
+        clientEmail: String?
+    ) {
         self.clientID = clientID
         self.redirectUrl = redirectUrl
         self.printByPaymentApp = printByPaymentApp
@@ -258,53 +265,94 @@ public struct CloseBatchParams: Sendable {
     }
 
     init?(params: [String: String]) {
-        clientID = params["clientID"]
-        redirectUrl = params["redirectUrl"]
+        self.clientID = params["clientID"]
+        self.redirectUrl = params["redirectUrl"]
 
-        printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
-        preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }
-        clientPhone = params["clientPhone"]
-        clientEmail = params["clientEmail"]
+        self.printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
+        self.preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }
+        self.clientPhone = params["clientPhone"]
+        self.clientEmail = params["clientEmail"]
     }
 }
 
-// gptom://batch/detail
+/// gptom://batch/detail
 public struct BatchDetailParams: Sendable {
     public let amsID: String
 
     init?(params: [String: String]) {
-        guard let amsID = params["amsID"] else { return nil }
+        guard let amsID = params["amsID"] else {
+            return nil
+        }
+
         self.amsID = amsID
     }
 }
 
-// gptom://login
+public struct LogoutParams: Sendable {
+    public let redirectUrl: String?
+
+    init?(params: [String: String]) {
+        self.redirectUrl = params["redirectUrl"]
+    }
+}
+
+/// gptom://login
 public struct LoginParams: Sendable {
     public let username: String
     public let password: String
-    public let tid: String?
+    public let tid: String
+    public let redirectUrl: String?
 
     init?(params: [String: String]) {
         guard
             let username = params["username"],
-            let password = params["password"]
-        else { return nil }
+            let password = params["password"],
+            let tid = params["tid"]
+        else {
+            return nil
+        }
 
         self.username = username
         self.password = password
-
-        tid = params["tid"]
+        self.tid = tid
+        self.redirectUrl = params["redirectUrl"]
     }
 }
 
-// gptom://status
+public struct ChangePasswordParams: Sendable {
+    public let username: String
+    public let password: String
+    public let newPassword: String
+    public let code: String?
+    public let redirectUrl: String?
+
+    init?(params: [String: String]) {
+        guard
+            let username = params["username"],
+            let password = params["password"],
+            let newPassword = params["newPassword"]
+        else {
+            return nil
+        }
+
+        self.username = username
+        self.password = password
+        self.newPassword = newPassword
+        self.code = params["code"].flatMap { $0.isEmpty ? nil : $0 }
+        self.redirectUrl = params["redirectUrl"]
+    }
+}
+
+/// gptom://status
 public struct StatusParams: Sendable {
     public let redirectUrl: String
 
     init?(params: [String: String]) {
         guard
             let redirectUrl = params["redirectUrl"]
-        else { return nil }
+        else {
+            return nil
+        }
 
         self.redirectUrl = redirectUrl
     }

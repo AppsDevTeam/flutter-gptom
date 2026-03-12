@@ -1,10 +1,3 @@
-//
-//  DeeplinkResult.swift
-//  deeplinks
-//
-//  Created by Jan Švec on 11.07.2024.
-//
-
 import Foundation
 
 public enum DeeplinkResult: Sendable {
@@ -12,6 +5,9 @@ public enum DeeplinkResult: Sendable {
     case refundTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
     case cancelTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
     case closeBatch(Batch?, TaskStatus, DeeplinkError?)
+    case login(TaskStatus, DeeplinkError?)
+    case logout(TaskStatus)
+    case changePassword(TaskStatus, DeeplinkError?)
     case status(AppStatus?, TaskStatus)
 
     public static func from(url: URL) -> DeeplinkResult? {
@@ -22,15 +18,24 @@ public enum DeeplinkResult: Sendable {
 
         if urlString.contains("transaction/create") {
             return parseTransactionResult(params: params)
-                .flatMap { .createTransaction($0.0, $0.1, $0.2, $0.3) }
+                .flatMap { .createTransaction($0, $1, $2, $3) }
 
         } else if urlString.contains("transaction/cancel") {
             return parseTransactionResult(params: params)
-                .flatMap { .cancelTransaction($0.0, $0.1, $0.2, $0.3) }
+                .flatMap { .cancelTransaction($0, $1, $2, $3) }
 
         } else if urlString.contains("transaction/refund") {
             return parseTransactionResult(params: params)
-                .flatMap { .refundTransaction($0.0, $0.1, $0.2, $0.3) }
+                .flatMap { .refundTransaction($0, $1, $2, $3) }
+
+        } else if urlString.contains("change-password") {
+            return parseSimple(params: params).flatMap { .changePassword($0, $1) }
+
+        } else if urlString.contains("login") {
+            return parseSimple(params: params).flatMap { .login($0, $1) }
+
+        } else if urlString.contains("logout") {
+            return parseStatus(params: params).flatMap { .logout($0) }
 
         } else if urlString.contains("batch/close") {
             guard let status = parseStatus(params: params)
@@ -57,15 +62,26 @@ public enum DeeplinkResult: Sendable {
         }
     }
 
+    private static func parseSimple(params: [String: String]) -> (TaskStatus, DeeplinkError?)? {
+        guard let status = parseStatus(params: params)
+        else {
+            return nil
+        }
+
+        let error = parseError(params: params)
+        return (status, error)
+    }
+
     private static func parseStatus(params: [String: String]) -> TaskStatus? {
-        return params["status"].flatMap { TaskStatus(rawValue: $0) }
+        params["status"].flatMap { TaskStatus(rawValue: $0) }
     }
 
     private static func parseError(params: [String: String]) -> DeeplinkError? {
-        return params["error"].flatMap { DeeplinkError(rawValue: $0) }
+        params["error"].flatMap { DeeplinkError(rawValue: $0) }
     }
 
-    private static func parseTransactionResult(params: [String: String]) -> (TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)? {
+    private static func parseTransactionResult(params: [String: String])
+    -> (TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)? {
         guard let status = parseStatus(params: params)
         else {
             return nil
@@ -93,8 +109,10 @@ public extension Decodable {
     static func decode(from string: String) throws -> Self {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(Self.self,
-                                  from: Data(string.utf8))
+        return try decoder.decode(
+            Self.self,
+            from: Data(string.utf8)
+        )
     }
 }
 
@@ -103,10 +121,13 @@ public extension Encodable {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
 
-        guard let data = try? encoder.encode(self),
-              let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),
-              let jsonData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
-        else { return "" }
+        guard
+            let data = try? encoder.encode(self),
+            let json = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers),
+            let jsonData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        else {
+            return ""
+        }
 
         return String(decoding: jsonData, as: UTF8.self)
     }

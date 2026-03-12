@@ -32,6 +32,7 @@ public struct TransactionData: Codable, Sendable {
     public let amsID: String? // Internal GP tom transaction ID, used for cancelling transaction
     public let blikCode: String? // Code used in BLIK transaction
     public let blikTransactionRef: String?
+    public let dccData: DCCOptionsWrapper?
 
     public init(batchNumber: String?,
                 receiptNumber: String?,
@@ -56,7 +57,8 @@ public struct TransactionData: Codable, Sendable {
                 amsID: String?,
                 authorizationCode: String?,
                 blikCode: String?,
-                blikTransactionRef: String?)
+                blikTransactionRef: String?,
+                dccData: DCCOptionsWrapper?)
     {
         self.batchNumber = batchNumber
         self.receiptNumber = receiptNumber
@@ -82,6 +84,7 @@ public struct TransactionData: Codable, Sendable {
         self.authorizationCode = authorizationCode
         self.blikCode = blikCode
         self.blikTransactionRef = blikTransactionRef
+        self.dccData = dccData
     }
 
     public init(from decoder: any Decoder) throws {
@@ -114,6 +117,7 @@ public struct TransactionData: Codable, Sendable {
         self.amsID = try container.decodeIfPresent(String.self, forKey: .amsID)
         self.blikCode = try container.decodeIfPresent(String.self, forKey: .blikCode)
         self.blikTransactionRef = try container.decodeIfPresent(String.self, forKey: .blikTransactionRef)
+        self.dccData = try container.decodeIfPresent(DCCOptionsWrapper.self, forKey: .dccData)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -145,6 +149,7 @@ public struct TransactionData: Codable, Sendable {
         try container.encodeIfPresent(self.amsID, forKey: .amsID)
         try container.encodeIfPresent(self.blikCode, forKey: .blikCode)
         try container.encodeIfPresent(self.blikTransactionRef, forKey: .blikTransactionRef)
+        try container.encodeIfPresent(self.dccData, forKey: .dccData)
     }
 
     enum CodingKeys: CodingKey {
@@ -172,5 +177,6 @@ public struct TransactionData: Codable, Sendable {
         case amsID
         case blikCode
         case blikTransactionRef
+        case dccData
     }
 }
