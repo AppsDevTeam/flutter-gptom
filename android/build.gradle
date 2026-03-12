@@ -98,13 +98,20 @@ task useAar {
             String fromStr = item.path
             String intoStr = aarPath + "/" + aarInfo[0].replace(".", "/") + "/" + aarInfo[1] + "/" + aarInfo[2]
             String newName = aarInfo[1] + "-" + aarInfo[2] + ".aar"
-            println("localMavenPath: " + localMavenPath)
-            println("aar: " + aarInfo + " file sha1:" + sha1 + " md5:" + md5)
-            println("aarPath: " + aarPath)
-            println("intoStr: " + intoStr)
-            println("newName: " + newName)
-            println("fromStr: " + fromStr)
-            println("intoStr: " + intoStr)
+            // Skip if AAR already copied and unchanged
+            File targetAar = project.file(intoStr + "/" + newName)
+            if (targetAar.exists()) {
+                String existingSha1 = project.file(intoStr + "/" + newName + ".sha1").text.trim()
+                if (existingSha1 == sha1) {
+                    println("AAR ${aarInfo[1]}-${aarInfo[2]} already up to date, skipping.")
+                    dependencies {
+                        implementation "${aarInfo[0]}:${aarInfo[1]}:${aarInfo[2]}"
+                    }
+                    return
+                }
+            }
+
+            println("Copying AAR: ${aarInfo[1]}-${aarInfo[2]} (sha1: ${sha1})")
 
             project.copy {
                 from fromStr
