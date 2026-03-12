@@ -32,6 +32,9 @@ git add README.md
 git commit -m "Release $TAG"
 git tag "$TAG"
 
+# Push commit and tag
+git push
+git push origin "$TAG"
+
 echo ""
-echo "Done! Created commit and tag $TAG."
-echo "Run 'git push && git push origin $TAG' to publish."
+echo "Done! Released $TAG (commit and tag pushed)."
