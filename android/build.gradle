@@ -64,7 +64,7 @@ android {
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.mockito:mockito-core:5.0.0")
 
-        implementation "androidx.core:core-ktx:1.17.0"
+        implementation "androidx.core:core-ktx:1.16.0"
         implementation 'com.google.code.gson:gson:2.13.2'
     }
 
