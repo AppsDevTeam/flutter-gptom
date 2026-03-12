@@ -23,7 +23,10 @@ Add dependency:
 
 ```yaml
 dependencies:
-  gptom: ^0.0.1
+  gptom:
+    git:
+      url: git@github.com:AppsDevTeam/flutter-gptom.git
+      ref: v1.0.0
 ```
 
 After cloning, enable git hooks:
