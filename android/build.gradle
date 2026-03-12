@@ -26,6 +26,14 @@ allprojects {
     }
 }
 
+rootProject.allprojects {
+    repositories {
+        maven {
+            url localMavenPath
+        }
+    }
+}
+
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
