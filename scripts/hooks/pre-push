@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Check that AAR version in android/libs/ matches the version documented in README.md
+
+AAR_FILE=$(ls android/libs/gptom-library-*.aar 2>/dev/null | head -1)
+
+if [ -z "$AAR_FILE" ]; then
+    echo "ERROR: No gptom-library-*.aar found in android/libs/"
+    exit 1
+fi
+
+AAR_VERSION=$(basename "$AAR_FILE" | sed 's/gptom-library-\(.*\)\.aar/\1/')
+README_VERSION=$(sed -n 's/.*Current bundled AAR version:\*\* `\([^`]*\)`.*/\1/p' README.md)
+
+if [ -z "$README_VERSION" ]; then
+    echo "ERROR: AAR version not found in README.md"
+    echo "Please add the line: **Current bundled AAR version:** \`$AAR_VERSION\`"
+    exit 1
+fi
+
+if [ "$AAR_VERSION" != "$README_VERSION" ]; then
+    echo "ERROR: AAR version mismatch!"
+    echo "  android/libs/ has: $AAR_VERSION"
+    echo "  README.md says:    $README_VERSION"
+    echo "Please update README.md to match the actual AAR version."
+    exit 1
+fi
+
+echo "AAR version check passed: $AAR_VERSION"

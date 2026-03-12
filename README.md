@@ -26,6 +26,12 @@ dependencies:
   gptom: ^0.0.1
 ```
 
+After cloning, enable git hooks:
+
+```bash
+git config core.hooksPath scripts/hooks
+```
+
 ---
 
 ## Usage
@@ -192,6 +198,8 @@ await GpTomManager.init(
 Android uses **App2App (AIDL)** integration.
 
 No special manifest setup is required besides having GP tom installed.
+
+**Current bundled AAR version:** `1.28.0`
 
 ---
 
