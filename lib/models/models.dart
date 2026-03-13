@@ -1,5 +1,6 @@
 export 'enums/card_holder_verification_method.dart';
 export 'enums/card_product.dart';
+export 'enums/ecr_result_code.dart';
 export 'enums/result_codes.dart';
 export 'enums/transaction_state.dart';
 export 'error_result.dart';

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:gptom/models/enums/card_holder_verification_method.dart';
 import 'package:gptom/models/enums/card_product.dart';
+import 'package:gptom/models/enums/ecr_result_code.dart';
 import 'package:gptom/models/error_result.dart';
 import 'package:gptom/models/merchant_info.dart';
 import 'package:gptom/utils/json_keys.dart';
@@ -102,6 +103,8 @@ class GpTomTransactionResult {
     required this.cardHolderVerificationMethod,
     required this.blikCode,
   });
+
+  GpTomEcrResultCode? get ecrResultCode => GpTomEcrResultCode.fromCode(result);
 
   @override
   String toString() => const JsonEncoder.withIndent('  ').convert(toJson());
