@@ -402,7 +402,40 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
             let data = appStatus.map { AppStatusMapper.toMap($0) }
 
-            response = .success(nil)
+            response = .success(data)
+
+        case .login(let status, let error):
+            kind = Kinds.login
+            clearPending = false
+
+            response = toPluginResponse(
+                status: status,
+                refusal: nil,
+                error: error,
+                successData: nil
+            )
+
+        case .logout(let status):
+            kind = Kinds.logout
+            clearPending = false
+
+            response = toPluginResponse(
+                status: status,
+                refusal: nil,
+                error: nil,
+                successData: nil
+            )
+
+        case .changePassword(let status, let error):
+            kind = Kinds.changePassword
+            clearPending = false
+
+            response = toPluginResponse(
+                status: status,
+                refusal: nil,
+                error: error,
+                successData: nil
+            )
         }
 
         if clearPending {

@@ -7,6 +7,9 @@ enum Kinds {
     static let cancel = "cancel"
     static let refund = "refund"
     static let closeBatch = "closeBatch"
+    static let login = "login"
+    static let logout = "logout"
+    static let changePassword = "changePassword"
     
     static func fromTransactionType(_ type: Int?) -> String? {
         switch type {
