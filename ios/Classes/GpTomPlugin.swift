@@ -157,6 +157,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
     private func transaction(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any] ?? [:]
+        GpTomLog.i("transaction()", ["args": args])
 
         guard let txId = args[JsonKeys.transactionId] as? String, !txId.isEmpty else {
             sendMethodResult(
@@ -322,6 +323,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         open url: URL,
         options: [UIApplication.OpenURLOptionsKey: Any] = [:]
     ) -> Bool {
+        GpTomLog.i("application(open:)", ["url": url.absoluteString])
         guard let result = DeeplinkResult.from(url: url) else {
             sendEvent(
                 kind: Kinds.info,
@@ -464,6 +466,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         payload.merge(response.toMap()) { _, new in new }
 
+        GpTomLog.i("sendEvent", payload)
         runOnMain {
             sink(payload)
         }

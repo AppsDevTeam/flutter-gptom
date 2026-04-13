@@ -142,6 +142,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                         override fun onRegisterResult(p0: cn.nexgo.smartconnect.model.RegisterResultEntity?) {}
 
                         override fun onRegisterV2Result(resultJson: String?) {
+                            GpTomLog.i("onRegisterV2Result", resultJson)
                             if (resultJson.isNullOrBlank()) {
                                 sendMethodResult(result, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Register returned empty result"))
                                 return
@@ -241,6 +242,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                         override fun onTransactionResult(p0: cn.nexgo.smartconnect.model.TransactionResultEntity?) {}
 
                         override fun onTransactionV2Result(resultJson: String?) {
+                            GpTomLog.i("onTransactionV2Result", resultJson)
                             try {
                                 val parsed = gson.fromJson(resultJson, cn.nexgo.smartconnect.model.TransactionResultV2Entity::class.java)
                                 
@@ -279,6 +281,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                     serviceClient.markInFlightStart()
                     svc.stateRequest(txId, object : IStateResultListener.Stub() {
                         override fun onStateResult(resultJson: String?) {
+                            GpTomLog.i("onStateResult", resultJson)
                             try {
                                 if (resultJson.isNullOrBlank()) {
                                     sendEvent(KIND_STATE, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Empty result"))
@@ -315,6 +318,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                     serviceClient.markInFlightStart()
                     svc.TransactionInquire(txId, object : IInquireResultListener.Stub() {
                         override fun onInquireResult(p0: cn.nexgo.smartconnect.model.InquireResultEntity) {
+                            GpTomLog.i("onInquireResult", p0.toString())
                             try {
                                 sendEvent(KIND_DETAIL, txId, response = PluginResponse.Success(InquireResultMapper.toMap(p0)))
                                 serviceClient.touch()
@@ -350,6 +354,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
             transactionId?.let { put(JsonKeys.transactionId, it) }
             putAll(response.toMap())
         }
+        GpTomLog.i("sendEvent", payload)
         runOnMain { sink.success(payload) }
     }
 
