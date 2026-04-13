@@ -30,8 +30,8 @@ class GpTomRegisterResult {
     return GpTomRegisterResult(
       resultCode: JsonUtils.asRequiredInt(json[JsonKeys.resultCode], fallback: -1),
       transactionId: JsonUtils.asString(json[JsonKeys.transactionId]),
-      clientId: JsonUtils.asString(json[JsonKeys.originReferenceNum]),
-      responseMessage: JsonUtils.asString(json[JsonKeys.originReferenceNum]),
+      clientId: JsonUtils.asString(json[JsonKeys.clientId]),
+      responseMessage: JsonUtils.asString(json[JsonKeys.responseMessage]),
       error: errorMap == null ? null : GpTomErrorResult.fromJson(errorMap),
       originReferenceNum: JsonUtils.asString(json[JsonKeys.originReferenceNum]),
     );
