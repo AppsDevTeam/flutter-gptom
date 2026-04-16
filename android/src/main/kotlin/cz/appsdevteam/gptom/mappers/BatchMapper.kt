@@ -8,7 +8,8 @@ object BatchMapper {
 
     fun toMap(e: TransactionResultV2Entity): Map<String, Any?> = mapOf(
         JsonKeys.transactionId to e.transactionID,
-        
+        JsonKeys.terminalId to e.terminalID,
+
         JsonKeys.batchNumber to e.batchNumber,
         JsonKeys.currencyCode to e.currencyCode?.toString(),
 

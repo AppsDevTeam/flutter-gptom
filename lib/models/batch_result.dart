@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 class GpTomBatchResult {
   final String? transactionId;
   final String? asmId;
+  final String? terminalId;
 
   final String? communicationId;
   final String? batchNumber;
@@ -36,6 +37,7 @@ class GpTomBatchResult {
   const GpTomBatchResult({
     required this.transactionId,
     required this.asmId,
+    required this.terminalId,
     required this.communicationId,
     required this.batchNumber,
     required this.currency,
@@ -62,6 +64,7 @@ class GpTomBatchResult {
     return GpTomBatchResult(
       transactionId: JsonUtils.asString(json[JsonKeys.transactionId]),
       asmId: JsonUtils.asString(json[JsonKeys.amsId]),
+      terminalId: JsonUtils.asString(json[JsonKeys.terminalId]),
       communicationId: JsonUtils.asString(json[JsonKeys.communicationId]),
       batchNumber: JsonUtils.asString(json[JsonKeys.batchNumber]),
       currency: JsonUtils.asCurrencyCode(json[JsonKeys.currencyCode]),
@@ -85,6 +88,7 @@ class GpTomBatchResult {
   Map<String, dynamic> toJson() => {
     JsonKeys.transactionId: transactionId,
     JsonKeys.amsId: asmId,
+    JsonKeys.terminalId: terminalId,
     JsonKeys.communicationId: communicationId,
     JsonKeys.batchNumber: batchNumber,
     JsonKeys.currencyCode: currency,
