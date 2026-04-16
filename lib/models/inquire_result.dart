@@ -91,7 +91,7 @@ class GpTomInquireResult {
       transacitonType: JsonUtils.asInt(json[JsonKeys.transactionType]),
       merchantID: JsonUtils.asString(json[JsonKeys.merchantId]),
       terminalID: JsonUtils.asString(json[JsonKeys.terminalId]),
-      currencyCode: JsonUtils.asString(json[JsonKeys.currencyCode]),
+      currencyCode: JsonUtils.asCurrencyCode(json[JsonKeys.currencyCode]),
       amount: JsonUtils.asString(json[JsonKeys.amount]),
       tipAmount: JsonUtils.asString(json[JsonKeys.tipAmount]),
       cashbackAmount: JsonUtils.asString(json[JsonKeys.cashbackAmount]),

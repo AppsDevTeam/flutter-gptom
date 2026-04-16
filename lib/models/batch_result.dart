@@ -64,7 +64,7 @@ class GpTomBatchResult {
       asmId: JsonUtils.asString(json[JsonKeys.amsId]),
       communicationId: JsonUtils.asString(json[JsonKeys.communicationId]),
       batchNumber: JsonUtils.asString(json[JsonKeys.batchNumber]),
-      currency: JsonUtils.asString(json[JsonKeys.currencyCode]),
+      currency: JsonUtils.asCurrencyCode(json[JsonKeys.currencyCode]),
       date: JsonUtils.asString(json[JsonKeys.date]),
       firstTransactionDate: JsonUtils.asString(json[JsonKeys.firstTransactionDate]),
       invalidCount: JsonUtils.asDouble(json[JsonKeys.invalidCount]),

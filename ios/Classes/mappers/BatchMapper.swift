@@ -10,10 +10,7 @@ struct BatchMapper {
         b.put(JsonKeys.batchNumber, batch.batchNumber)
         b.put(JsonKeys.communicationId, batch.communicationId)
         
-        b.put(
-            JsonKeys.currencyCode,
-            batch.currency.map { JsonUtils.asNumericCurrencyCode($0) }
-        )
+        b.put(JsonKeys.currencyCode, batch.currency)
         
         b.put(JsonKeys.date, batch.date?.ISO8601Format())
         b.put(JsonKeys.firstTransactionDate, batch.firstTransactionDate?.ISO8601Format())
