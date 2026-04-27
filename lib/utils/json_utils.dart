@@ -104,6 +104,32 @@ class JsonUtils {
     return enumFromInt<T>(v, values, codeOf) ?? fallback;
   }
 
+  /// Masks a card number into the standard format based on EMV AID.
+  /// Examples:
+  ///   asMaskedCardNumber("4729", "A0000000031010") → "**** **** **** 4729"
+  ///   asMaskedCardNumber("**** **** **** 7866", "A0000000041010") → "**** **** **** 7866"
+  static String? asMaskedCardNumber(Object? cardNumber, Object? emvAid) {
+    if (cardNumber == null) return null;
+    final String raw = cardNumber.toString();
+    if (raw.isEmpty) return null;
+
+    final String last4 = raw.replaceAll(RegExp(r'[^0-9]'), '').padLeft(4, '*');
+    final String suffix = last4.length >= 4 ? last4.substring(last4.length - 4) : last4;
+
+    final String aid = emvAid?.toString() ?? '';
+
+    // Amex: A000000025 → 15 digits, format: XXXX XXXXXX XXXXX → "**** ****** *XXXX"
+    if (aid.startsWith('A000000025')) {
+      return '**** ****** *$suffix';
+    }
+    // Diners/Discover variants: A000000152, A000000324 → 14 digits
+    if (aid.startsWith('A000000152') || aid.startsWith('A000000324')) {
+      return '**** ****** $suffix';
+    }
+    // Default (Visa, Mastercard, JCB, Maestro, others): 16 digits
+    return '**** **** **** $suffix';
+  }
+
   /// Converts a currency value to ISO 4217 alphabetic code.
   /// Accepts both numeric ("203") and alphabetic ("CZK") input.
   static String? asCurrencyCode(Object? v) {

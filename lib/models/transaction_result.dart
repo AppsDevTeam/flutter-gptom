@@ -128,7 +128,7 @@ class GpTomTransactionResult {
       amount: JsonUtils.asInt(json[JsonKeys.amount]),
       tipAmount: JsonUtils.asInt(json[JsonKeys.tipAmount]),
       cashbackAmount: JsonUtils.asInt(json[JsonKeys.cashbackAmount]),
-      cardNumber: JsonUtils.asString(json[JsonKeys.cardNumber]),
+      cardNumber: JsonUtils.asMaskedCardNumber(json[JsonKeys.cardNumber], json[JsonKeys.emvAid]),
       cardIssuer: JsonUtils.asString(json[JsonKeys.cardIssuer]),
       cardDataEntry: JsonUtils.asString(json[JsonKeys.cardDataEntry]),
       approvedCode: JsonUtils.asString(json[JsonKeys.approvedCode]),

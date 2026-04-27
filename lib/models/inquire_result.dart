@@ -96,7 +96,7 @@ class GpTomInquireResult {
       tipAmount: JsonUtils.asString(json[JsonKeys.tipAmount]),
       cashbackAmount: JsonUtils.asString(json[JsonKeys.cashbackAmount]),
       cardProduct: GpTomCardProduct.fromJson(json[JsonKeys.cardProduct]),
-      cardNumber: JsonUtils.asString(json[JsonKeys.cardNumber]),
+      cardNumber: JsonUtils.asMaskedCardNumber(json[JsonKeys.cardNumber], json[JsonKeys.emvAid]),
       cardIssuer: JsonUtils.asString(json[JsonKeys.cardIssuer]),
       cardDataEntry: JsonUtils.asString(json[JsonKeys.cardDataEntry]),
       approvedCode: JsonUtils.asString(json[JsonKeys.approvedCode]),
