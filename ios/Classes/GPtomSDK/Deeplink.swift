@@ -239,7 +239,7 @@ public struct TransactionDetailParams: Sendable {
 }
 
 /// gptom://batch/close
-public struct CloseBatchParams: Sendable {
+public struct CloseBatchParams: Sendable, Equatable {
     public let clientID: String?
     public let redirectUrl: String?
 

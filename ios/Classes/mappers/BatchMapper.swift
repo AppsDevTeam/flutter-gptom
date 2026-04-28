@@ -27,9 +27,9 @@ struct BatchMapper {
         
         b.put(JsonKeys.invalidCount, batch.invalidCount)
         
-        b.put(JsonKeys.tipAmount, batch.tipAmount?.int64)
+        b.put(JsonKeys.tipAmount, batch.tipAmount.int64)
         b.put(JsonKeys.tipCount, batch.tipCount)
-        b.put(JsonKeys.tipAverage, batch.tipAverage?.int64)
+        b.put(JsonKeys.tipAverage, batch.tipAverage.int64)
         b.put(JsonKeys.tipAveragePercentage, batch.tipAveragePercentage)
         
         return b.build()

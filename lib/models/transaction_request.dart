@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 enum GpTomTransactionType {
   sale(1),
   storno(2),
-  // refund(3),
+  refund(3),
   closeBatch(4);
 
   const GpTomTransactionType(this.code);
@@ -126,10 +126,9 @@ class GpTomTransactionRequest {
   }
 
   /// Convenience: refund.
-  /*factory GpTomTransactionRequest.refund({
+  factory GpTomTransactionRequest.refund({
     required String transactionId,
     required int amount,
-    required String originTransactionId,
     String? originReferenceNum,
     String? clientId,
     GpTomPaymentMethod? paymentMethod,
@@ -140,10 +139,9 @@ class GpTomTransactionRequest {
       amount: amount,
       originReferenceNum: originReferenceNum,
       clientId: clientId,
-      originTransactionId: originTransactionId,
       paymentMethod: paymentMethod,
     );
-  }*/
+  }
 
   Map<String, dynamic> toJson() => {
     JsonKeys.paymentMethod: paymentMethod?.value,

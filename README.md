@@ -218,5 +218,5 @@ No special manifest setup is required besides having GP tom installed.
 
 This plugin bundles **GP tom iOS SDK** (MIT License).
 Source: https://github.com/GP-tom/tom-ios-sdk
-Bundled commit: [`36abfca`](https://github.com/GP-tom/tom-ios-sdk/commit/36abfca434cb97901ebd46983ac13f64e689e711) (2026-02-23)
+Bundled commit: [`7f6e963`](https://github.com/GP-tom/tom-ios-sdk/commit/7f6e963bfbb3be35e3617802950b906ff760e011) (2026-04-28)
 See `THIRD_PARTY_NOTICES.md` for details.

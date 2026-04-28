@@ -2,15 +2,17 @@ import Foundation
 
 struct TransactionMapper {
     private init() {}
-    
-    static func toMap(_ tx: TransactionData) -> [String: Any] {
+
+    static func toMap(_ tx: TransactionData, transactionType: Int) -> [String: Any] {
         var b = JsonMapBuilder()
-        
+
         b.put(JsonKeys.transactionId, tx.transactionID)
         b.put(JsonKeys.amsId, tx.amsID)
-        
+
         b.put(JsonKeys.result, tx.result)
-        
+        b.put(JsonKeys.transactionType, transactionType)
+        b.put(JsonKeys.paymentMethod, tx.transactionType?.rawValue)
+
         b.put(JsonKeys.merchantId, tx.merchantID)
         b.put(JsonKeys.terminalId, tx.terminalID)
         

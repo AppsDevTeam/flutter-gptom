@@ -1,6 +1,28 @@
 import Foundation
 
-public struct Batch: Codable, Equatable, Sendable {
+public struct Batch: Codable, Equatable, Sendable, Identifiable {
+    public enum CodingKeys: CodingKey {
+        case amsId
+        case batchNumber
+        case communicationId
+        case currency
+        case date
+        case firstTransactionDate
+        case invalidCount
+        case previousBatchDate
+        case saleAmount
+        case saleCount
+        case subBatches
+        case totalAmount
+        case totalCount
+        case voidAmount
+        case voidCount
+        case tipAmount
+        case tipCount
+        case tipAverage
+        case tipAveragePercentage
+    }
+
     /** Internal id of the batch, OPEN for pseudo batch with open transactions */
     public var amsId: String
 
@@ -33,36 +55,43 @@ public struct Batch: Codable, Equatable, Sendable {
 
     public let voidCount: Double?
 
-    public var isOpen: Bool { self.amsId == "OPEN" }
+    public let tipAmount: Amount
 
-    public let tipAmount: Amount?
+    public let tipCount: Int
 
-    public let tipCount: Int?
+    public let tipAverage: Amount
 
-    public let tipAverage: Amount?
+    public let tipAveragePercentage: Double
 
-    public let tipAveragePercentage: Double?
+    public var id: String {
+        amsId
+    }
 
-    public init(amsId: String,
-                batchNumber: String? = nil,
-                communicationId: String? = nil,
-                currency: String? = nil,
-                date: Date? = nil,
-                firstTransactionDate: Date? = nil,
-                invalidCount: Double? = nil,
-                previousBatchDate: Date? = nil,
-                saleAmount: Amount? = nil,
-                saleCount: Double? = nil,
-                subBatches: SubBatches? = nil,
-                totalAmount: Amount? = nil,
-                totalCount: Double? = nil,
-                voidAmount: Amount? = nil,
-                voidCount: Double? = nil,
-                tipAmount: Amount? = nil,
-                tipCount: Int? = nil,
-                tipAverage: Amount? = nil,
-                tipAveragePercentage: Double? = nil)
-    {
+    public var isOpen: Bool {
+        amsId == "OPEN"
+    }
+
+    public init(
+        amsId: String,
+        batchNumber: String? = nil,
+        communicationId: String? = nil,
+        currency: String? = nil,
+        date: Date? = nil,
+        firstTransactionDate: Date? = nil,
+        invalidCount: Double? = nil,
+        previousBatchDate: Date? = nil,
+        saleAmount: Amount? = nil,
+        saleCount: Double? = nil,
+        subBatches: SubBatches? = nil,
+        totalAmount: Amount? = nil,
+        totalCount: Double? = nil,
+        voidAmount: Amount? = nil,
+        voidCount: Double? = nil,
+        tipAmount: Amount? = nil,
+        tipCount: Int? = nil,
+        tipAverage: Amount? = nil,
+        tipAveragePercentage: Double? = nil
+    ) {
         self.amsId = amsId
         self.batchNumber = batchNumber
         self.communicationId = communicationId
@@ -78,10 +107,10 @@ public struct Batch: Codable, Equatable, Sendable {
         self.totalCount = totalCount
         self.voidAmount = voidAmount
         self.voidCount = voidCount
-        self.tipAmount = tipAmount
-        self.tipCount = tipCount
-        self.tipAverage = tipAverage
-        self.tipAveragePercentage = tipAveragePercentage
+        self.tipAmount = tipAmount ?? 0
+        self.tipCount = tipCount ?? 0
+        self.tipAverage = tipAverage ?? 0
+        self.tipAveragePercentage = tipAveragePercentage ?? 0
     }
 
     public init(from decoder: any Decoder) throws {
@@ -111,18 +140,18 @@ public struct Batch: Codable, Equatable, Sendable {
         self.totalCount = try container.decodeIfPresent(Double.self, forKey: .totalCount)
         self.voidAmount = try container.decodeIfPresent(Amount.self, forKey: .voidAmount)
         self.voidCount = try container.decodeIfPresent(Double.self, forKey: .voidCount)
-        self.tipAmount = try container.decodeIfPresent(Amount.self, forKey: .tipAmount)
-        self.tipCount = try container.decodeIfPresent(Int.self, forKey: .tipCount)
-        self.tipAverage = try container.decodeIfPresent(Amount.self, forKey: .tipAverage)
-        self.tipAveragePercentage = try container.decodeIfPresent(Double.self, forKey: .tipAveragePercentage)
+        self.tipAmount = try container.decodeIfPresent(Amount.self, forKey: .tipAmount) ?? 0
+        self.tipCount = try container.decodeIfPresent(Int.self, forKey: .tipCount) ?? 0
+        self.tipAverage = try container.decodeIfPresent(Amount.self, forKey: .tipAverage) ?? 0
+        self.tipAveragePercentage = try container.decodeIfPresent(Double.self, forKey: .tipAveragePercentage) ?? 0
     }
 
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.amsId, forKey: .amsId)
-        try container.encodeIfPresent(self.batchNumber, forKey: .batchNumber)
-        try container.encodeIfPresent(self.communicationId, forKey: .communicationId)
-        try container.encodeIfPresent(self.currency, forKey: .currency)
+        try container.encode(amsId, forKey: .amsId)
+        try container.encodeIfPresent(batchNumber, forKey: .batchNumber)
+        try container.encodeIfPresent(communicationId, forKey: .communicationId)
+        try container.encodeIfPresent(currency, forKey: .currency)
 
         let date = date.flatMap { ISO.iso8601DateFormatter.string(from: $0) }
         try container.encodeIfPresent(date, forKey: .date)
@@ -130,43 +159,22 @@ public struct Batch: Codable, Equatable, Sendable {
         let firstTransactionDate = firstTransactionDate.flatMap { ISO.iso8601DateFormatter.string(from: $0) }
         try container.encodeIfPresent(firstTransactionDate, forKey: .firstTransactionDate)
 
-        try container.encodeIfPresent(self.invalidCount, forKey: .invalidCount)
+        try container.encodeIfPresent(invalidCount, forKey: .invalidCount)
 
         let previousBatchDate = previousBatchDate.flatMap { ISO.iso8601DateFormatter.string(from: $0) }
         try container.encodeIfPresent(previousBatchDate, forKey: .previousBatchDate)
 
-        try container.encodeIfPresent(self.saleAmount, forKey: .saleAmount)
-        try container.encodeIfPresent(self.saleCount, forKey: .saleCount)
-        try container.encodeIfPresent(self.subBatches, forKey: .subBatches)
-        try container.encodeIfPresent(self.totalAmount, forKey: .totalAmount)
-        try container.encodeIfPresent(self.totalCount, forKey: .totalCount)
-        try container.encodeIfPresent(self.voidAmount, forKey: .voidAmount)
-        try container.encodeIfPresent(self.voidCount, forKey: .voidCount)
-        try container.encodeIfPresent(self.tipAmount, forKey: .tipAmount)
-        try container.encodeIfPresent(self.tipCount, forKey: .tipCount)
-        try container.encodeIfPresent(self.tipAverage, forKey: .tipAverage)
-        try container.encodeIfPresent(self.tipAveragePercentage, forKey: .tipAveragePercentage)
+        try container.encodeIfPresent(saleAmount, forKey: .saleAmount)
+        try container.encodeIfPresent(saleCount, forKey: .saleCount)
+        try container.encodeIfPresent(subBatches, forKey: .subBatches)
+        try container.encodeIfPresent(totalAmount, forKey: .totalAmount)
+        try container.encodeIfPresent(totalCount, forKey: .totalCount)
+        try container.encodeIfPresent(voidAmount, forKey: .voidAmount)
+        try container.encodeIfPresent(voidCount, forKey: .voidCount)
+        try container.encodeIfPresent(tipAmount, forKey: .tipAmount)
+        try container.encodeIfPresent(tipCount, forKey: .tipCount)
+        try container.encodeIfPresent(tipAverage, forKey: .tipAverage)
+        try container.encodeIfPresent(tipAveragePercentage, forKey: .tipAveragePercentage)
     }
 
-    public enum CodingKeys: CodingKey {
-        case amsId
-        case batchNumber
-        case communicationId
-        case currency
-        case date
-        case firstTransactionDate
-        case invalidCount
-        case previousBatchDate
-        case saleAmount
-        case saleCount
-        case subBatches
-        case totalAmount
-        case totalCount
-        case voidAmount
-        case voidCount
-        case tipAmount
-        case tipCount
-        case tipAverage
-        case tipAveragePercentage
-    }
 }

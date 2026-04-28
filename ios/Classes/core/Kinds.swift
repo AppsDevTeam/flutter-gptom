@@ -20,4 +20,14 @@ enum Kinds {
         default: return nil
         }
     }
+
+    static func toTransactionType(_ kind: String) -> Int? {
+        switch kind {
+        case sale: return 1
+        case cancel: return 2
+        case refund: return 3
+        case closeBatch: return 4
+        default: return nil
+        }
+    }
 }

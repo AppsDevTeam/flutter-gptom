@@ -61,9 +61,9 @@ class _DemoHomeState extends State<DemoHome> {
       _addLog('EVENT SALE: ${_fmt(r)}\nDATA: ${r.data}');
     });
 
-    /*_refundSub = GpTomManager.refundResults.listen((r) {
+    _refundSub = GpTomManager.refundResults.listen((r) {
       _addLog('EVENT REFUND: ${_fmt(r)}\nDATA: ${r.data}');
-    });*/
+    });
 
     _cancelSub = GpTomManager.cancelResults.listen((r) {
       _addLog('EVENT STORNO: ${_fmt(r)}\nDATA: ${r.data}');
@@ -204,12 +204,6 @@ class _DemoHomeState extends State<DemoHome> {
   }
 
   Future<void> _refund() async {
-    final origin = _strOrNull(_originTxCtrl);
-    if (origin == null) {
-      _addLog('ERROR: originTransactionId is required for refund');
-      return;
-    }
-
     final amount = _intOrNull(_amountCtrl);
     if (amount == null || amount <= 0) {
       _addLog('ERROR: invalid amount');
@@ -230,18 +224,18 @@ class _DemoHomeState extends State<DemoHome> {
     }
 
     setState(() => _transactionId = newTxId);
-    _addLog('REFUND will use new transactionId=$newTxId, originTransactionId=$origin');
+    _transactionIdCtrl.text = newTxId;
+    _addLog('REFUND will use new transactionId=$newTxId');
 
-    /*final req = GpTomTransactionRequest.refund(
+    final req = GpTomTransactionRequest.refund(
       transactionId: newTxId,
       amount: amount,
       originReferenceNum: _strOrNull(_originRefCtrl),
       clientId: _strOrNull(_clientIdCtrl),
-      originTransactionId: origin,
       paymentMethod: _paymentMethod,
     );
 
-    await _call(() => GpTomManager.refund(req));*/
+    await _call(() => GpTomManager.refund(req));
   }
 
   Future<void> _storno() async {
@@ -500,7 +494,7 @@ class _DemoHomeState extends State<DemoHome> {
                         OutlinedButton(onPressed: _isInstalled, child: const Text('isInstalled')),
                         OutlinedButton(onPressed: _register, child: const Text('register')),
                         FilledButton(onPressed: _sale, child: const Text('SALE')),
-                        // FilledButton(onPressed: _refund, child: const Text('REFUND')),
+                        FilledButton(onPressed: _refund, child: const Text('REFUND')),
                         FilledButton.tonal(onPressed: _storno, child: const Text('STORNO')),
                         FilledButton.tonal(onPressed: _state, child: const Text('STATE')),
                         FilledButton.tonal(onPressed: _detail, child: const Text('DETAIL')),

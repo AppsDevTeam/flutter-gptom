@@ -25,8 +25,8 @@ class GpTomManager {
   static Stream<GpTomResult<GpTomTransactionResult>> get saleResults =>
       _typedResults<GpTomTransactionResult>(kind: GpTomEventKind.sale, parser: GpTomTransactionResult.fromJson);
 
-  /*static Stream<GpTomResult<GpTomTransactionResult>> get refundResults =>
-      _typedResults<GpTomTransactionResult>(kind: GpTomEventKind.refund, parser: GpTomTransactionResult.fromJson);*/
+  static Stream<GpTomResult<GpTomTransactionResult>> get refundResults =>
+      _typedResults<GpTomTransactionResult>(kind: GpTomEventKind.refund, parser: GpTomTransactionResult.fromJson);
 
   static Stream<GpTomResult<GpTomTransactionResult>> get cancelResults =>
       _typedResults<GpTomTransactionResult>(kind: GpTomEventKind.cancel, parser: GpTomTransactionResult.fromJson);
@@ -75,13 +75,13 @@ class GpTomManager {
   }
 
   /// Convenience wrapper for REFUND. Equivalent to calling [transaction] with a refund request.
-  /*static Future<GpTomResult<void>> refund(GpTomTransactionRequest request) async {
+  static Future<GpTomResult<void>> refund(GpTomTransactionRequest request) async {
     if (request.transactionType != GpTomTransactionType.refund) {
       return GpTomResult(code: GpTomResultCode.invalidArgument, message: 'Request.type must be refund');
     }
 
     return transaction(request);
-  }*/
+  }
 
   /// Convenience wrapper for CANCEL. Equivalent to calling [transaction] with a storno request.
   static Future<GpTomResult<void>> storno(GpTomTransactionRequest request) async {

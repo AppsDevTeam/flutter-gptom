@@ -239,6 +239,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         let tipCollect = args[JsonKeys.tipCollect] as? Bool
         let tipAmount = (args[JsonKeys.tipAmount] as? NSNumber)?.intValue
         let originReferenceNum = args[JsonKeys.originReferenceNum] as? String
+        let paymentMethod = args[JsonKeys.paymentMethod] as? String
 
         var params: [String: String?] = [
             DeeplinkParamKeys.requestID: txId,
@@ -253,11 +254,13 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             params[DeeplinkParamKeys.tipCollect] = boolStr(tipCollect)
             params[DeeplinkParamKeys.tipAmount] = intStr(tipAmount)
             params[DeeplinkParamKeys.originReferenceNum] = originReferenceNum
+            params[DeeplinkParamKeys.transactionType] = paymentMethod
         }
 
         if kind == Kinds.refund {
             params[DeeplinkParamKeys.amount] = intStr(amount)
             params[DeeplinkParamKeys.originReferenceNum] = originReferenceNum
+            params[DeeplinkParamKeys.transactionType] = paymentMethod
         }
 
         if kind == Kinds.cancel {
@@ -352,7 +355,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             kind = Kinds.sale
             transactionId = tx?.transactionID
 
-            let data = tx.map { TransactionMapper.toMap($0) }
+            let data = tx.map { TransactionMapper.toMap($0, transactionType: 1) }
 
             response = toPluginResponse(
                 status: status,
@@ -365,7 +368,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             kind = Kinds.refund
             transactionId = tx?.transactionID
 
-            let data = tx.map { TransactionMapper.toMap($0) }
+            let data = tx.map { TransactionMapper.toMap($0, transactionType: 3) }
 
             response = toPluginResponse(
                 status: status,
@@ -378,7 +381,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             kind = Kinds.cancel
             transactionId = tx?.transactionID
 
-            let data = tx.map { TransactionMapper.toMap($0) }
+            let data = tx.map { TransactionMapper.toMap($0, transactionType: 2) }
 
             response = toPluginResponse(
                 status: status,

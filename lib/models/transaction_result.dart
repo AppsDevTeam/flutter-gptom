@@ -23,6 +23,7 @@ class GpTomTransactionResult {
   final String? asmId;
   final String? externalTransactionId;
   final int? transactionType;
+  final String? paymentMethod;
   final String? merchantId;
   final String? terminalId;
   final String? currencyCode;
@@ -64,6 +65,7 @@ class GpTomTransactionResult {
     required this.asmId,
     required this.externalTransactionId,
     required this.transactionType,
+    required this.paymentMethod,
     required this.merchantId,
     required this.terminalId,
     required this.currencyCode,
@@ -107,6 +109,7 @@ class GpTomTransactionResult {
       asmId: JsonUtils.asString(json[JsonKeys.amsId]),
       externalTransactionId: JsonUtils.asString(json[JsonKeys.externalTransactionId]),
       transactionType: JsonUtils.asInt(json[JsonKeys.transactionType]),
+      paymentMethod: JsonUtils.asString(json[JsonKeys.paymentMethod]),
       merchantId: JsonUtils.asString(json[JsonKeys.merchantId]),
       terminalId: JsonUtils.asString(json[JsonKeys.terminalId]),
       currencyCode: JsonUtils.asCurrencyCode(json[JsonKeys.currencyCode]),
@@ -145,6 +148,7 @@ class GpTomTransactionResult {
       JsonKeys.amsId: asmId,
       JsonKeys.externalTransactionId: externalTransactionId,
       JsonKeys.transactionType: transactionType,
+      JsonKeys.paymentMethod: paymentMethod,
       JsonKeys.merchantId: merchantId,
       JsonKeys.terminalId: terminalId,
       JsonKeys.currencyCode: currencyCode,
