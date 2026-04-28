@@ -308,7 +308,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                         STATE_COMPLETED -> handleCompletedState(svc, txType, txId)
                         STATE_CANCELLED -> {
                             activePollKinds.remove(txId)
-                            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.FAILED, "Transaction cancelled"))
+                            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.CANCELLED, "Transaction cancelled"))
                             serviceClient.markInFlightEnd()
                         }
                         STATE_ERROR -> {

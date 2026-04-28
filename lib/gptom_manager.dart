@@ -77,7 +77,11 @@ class GpTomManager {
   /// Convenience wrapper for REFUND. Equivalent to calling [transaction] with a refund request.
   static Future<GpTomResult<void>> refund(GpTomTransactionRequest request) async {
     if (request.transactionType != GpTomTransactionType.refund) {
-      return GpTomResult(code: GpTomResultCode.invalidArgument, message: 'Request.type must be refund');
+      return GpTomResult(
+        code: GpTomResultCode.invalidArgument,
+        message: 'Request.type must be refund',
+        transactionId: request.transactionId,
+      );
     }
 
     return transaction(request);
@@ -86,7 +90,11 @@ class GpTomManager {
   /// Convenience wrapper for CANCEL. Equivalent to calling [transaction] with a storno request.
   static Future<GpTomResult<void>> storno(GpTomTransactionRequest request) async {
     if (request.transactionType != GpTomTransactionType.storno) {
-      return GpTomResult(code: GpTomResultCode.invalidArgument, message: 'Request.type must be storno');
+      return GpTomResult(
+        code: GpTomResultCode.invalidArgument,
+        message: 'Request.type must be storno',
+        transactionId: request.transactionId,
+      );
     }
 
     return transaction(request);
@@ -107,7 +115,11 @@ class GpTomManager {
     final transactionId = reg.data?.transactionId;
 
     if (reg.code != GpTomResultCode.ok || transactionId == null || transactionId.isEmpty) {
-      return GpTomResult<void>(code: reg.code, message: reg.message ?? 'closeBatch: register failed');
+      return GpTomResult<void>(
+        code: reg.code,
+        message: reg.message ?? 'closeBatch: register failed',
+        transactionId: transactionId,
+      );
     }
 
     return transaction(
@@ -145,27 +157,45 @@ class GpTomManager {
     Map<String, dynamic>? args,
     T Function(Object?)? dataParser,
   }) async {
-    if (!_initialized) return _notInit<T>();
+    final String? txId = args?[JsonKeys.transactionId] as String?;
+
+    if (!_initialized) return _notInit<T>(transactionId: txId);
 
     try {
       final res = await _methodChannel.invokeMethod<Map>(method, args);
 
       if (res == null) {
-        return GpTomResult<T>(code: GpTomResultCode.internalError, message: 'Native returned null response');
+        return GpTomResult<T>(
+          code: GpTomResultCode.internalError,
+          message: 'Native returned null response',
+          transactionId: txId,
+        );
       }
 
       return GpTomResult.fromMap<T>(res.cast<Object?, Object?>(), dataParser: dataParser);
     } on MissingPluginException catch (e) {
-      return GpTomResult<T>(code: GpTomResultCode.internalError, message: 'Plugin not registered: ${e.message}');
+      return GpTomResult<T>(
+        code: GpTomResultCode.internalError,
+        message: 'Plugin not registered: ${e.message}',
+        transactionId: txId,
+      );
     } on PlatformException catch (e) {
-      return GpTomResult<T>(code: GpTomResultCode.internalError, message: e.message ?? e.code);
+      return GpTomResult<T>(
+        code: GpTomResultCode.internalError,
+        message: e.message ?? e.code,
+        transactionId: txId,
+      );
     } catch (e) {
-      return GpTomResult<T>(code: GpTomResultCode.internalError, message: e.toString());
+      return GpTomResult<T>(code: GpTomResultCode.internalError, message: e.toString(), transactionId: txId);
     }
   }
 
-  static GpTomResult<T> _notInit<T>() {
-    return GpTomResult<T>(code: GpTomResultCode.notInitialized, message: 'Call GpTomManager.init() first');
+  static GpTomResult<T> _notInit<T>({String? transactionId}) {
+    return GpTomResult<T>(
+      code: GpTomResultCode.notInitialized,
+      message: 'Call GpTomManager.init() first',
+      transactionId: transactionId,
+    );
   }
 
   static Stream<GpTomResult<T>> _typedResults<T>({

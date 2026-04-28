@@ -353,7 +353,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         case .createTransaction(let tx, let refusal, let status, let error):
             kind = Kinds.sale
-            transactionId = tx?.transactionID
+            transactionId = tx?.transactionID ?? (pendingStore.read()?[JsonKeys.transactionId] as? String)
 
             let data = tx.map { TransactionMapper.toMap($0, transactionType: 1) }
 
@@ -366,7 +366,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         case .refundTransaction(let tx, let refusal, let status, let error):
             kind = Kinds.refund
-            transactionId = tx?.transactionID
+            transactionId = tx?.transactionID ?? (pendingStore.read()?[JsonKeys.transactionId] as? String)
 
             let data = tx.map { TransactionMapper.toMap($0, transactionType: 3) }
 
@@ -379,7 +379,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         case .cancelTransaction(let tx, let refusal, let status, let error):
             kind = Kinds.cancel
-            transactionId = tx?.transactionID
+            transactionId = tx?.transactionID ?? (pendingStore.read()?[JsonKeys.transactionId] as? String)
 
             let data = tx.map { TransactionMapper.toMap($0, transactionType: 2) }
 
@@ -536,6 +536,13 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             return .error(
                 code: ResultCodes.from(error),
                 message: error.rawValue
+            )
+        }
+
+        if status == .cancelled {
+            return .error(
+                code: ResultCodes.cancelled,
+                message: status.rawValue
             )
         }
 
