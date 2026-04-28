@@ -17,7 +17,6 @@ struct TransactionMapper {
         b.put(JsonKeys.currencyCode, tx.currencyCode)
         b.put(JsonKeys.amount, tx.amount.flatMap { $0.amount?.int64 })
         b.put(JsonKeys.tipAmount, tx.tipAmount.flatMap { $0.amount?.int64 })
-        b.put(JsonKeys.batchTotalAmount, tx.totalAmount.flatMap { $0.amount?.int64 })
         
         b.put(JsonKeys.cardNumber, tx.cardNumber)
         b.put(JsonKeys.cardProduct, tx.cardType?.rawValue)

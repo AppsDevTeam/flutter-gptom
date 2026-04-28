@@ -91,13 +91,6 @@ class JsonKeys {
   static const String error = 'error';
   static const String emvAppLabel = 'emvAppLabel';
 
-  static const String batchTotalNum = 'batchTotalNum';
-  static const String batchTotalAmount = 'batchTotalAmount';
-  static const String batchSaleNum = 'batchSaleNum';
-  static const String batchSaleAmount = 'batchSaleAmount';
-  static const String batchVoidNum = 'batchVoidNum';
-  static const String batchVoidAmount = 'batchVoidAmount';
-
   static const String totalCount = 'totalCount';
   static const String totalAmount = 'totalAmount';
   static const String saleCount = 'saleCount';

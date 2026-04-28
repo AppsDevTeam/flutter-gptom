@@ -28,4 +28,5 @@ object ResultCodes {
     const val INVALID_CODE = "invalidCode"
     const val INVALID_USER_NAME = "invalidUserName"
     const val TERMINAL_SETUP_FAILED = "terminalSetupFailed"
+    const val CANCELLED = "cancelled"
 }

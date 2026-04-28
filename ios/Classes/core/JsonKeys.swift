@@ -93,13 +93,6 @@ public struct JsonKeys {
     public static let error = "error"
     public static let emvAppLabel = "emvAppLabel"
 
-    public static let batchTotalNum = "batchTotalNum"
-    public static let batchTotalAmount = "batchTotalAmount"
-    public static let batchSaleNum = "batchSaleNum"
-    public static let batchSaleAmount = "batchSaleAmount"
-    public static let batchVoidNum = "batchVoidNum"
-    public static let batchVoidAmount = "batchVoidAmount"
-
     public static let totalCount = "totalCount"
     public static let totalAmount = "totalAmount"
     public static let saleCount = "saleCount"

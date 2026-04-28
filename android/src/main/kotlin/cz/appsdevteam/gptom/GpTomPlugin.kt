@@ -43,6 +43,10 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
     private val gson = Gson()
     private val mainHandler = Handler(Looper.getMainLooper())
 
+    private val pendingBatchResults = mutableMapOf<String, Map<String, Any?>>()
+    private val cancelledPolls = mutableSetOf<String>()
+    private val activePollKinds = mutableMapOf<String, String>()
+
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         appContext = binding.applicationContext
         GpTomLog.configure(enabled = false)
@@ -107,6 +111,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                 pendingStore.clear()
                 sendMethodResult(result, PluginResponse.Success(null))
             }
+            "cancelPolling" -> cancelPolling(call, result)
             else -> result.notImplemented()
         }
     }
@@ -243,23 +248,21 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
 
                         override fun onTransactionV2Result(resultJson: String?) {
                             GpTomLog.i("onTransactionV2Result", resultJson)
+                            // Only closeBatch needs the V2 callback data (batch totals).
+                            // Sale/refund/cancel rely entirely on state polling + inquire.
+                            if (txType != TransactionType.CLOSE_BATCH) return
+
                             try {
                                 val parsed = gson.fromJson(resultJson, cn.nexgo.smartconnect.model.TransactionResultV2Entity::class.java)
-                                
-                                val mapperResult = if (txType == TransactionType.CLOSE_BATCH) {
-                                    BatchMapper.toMap(parsed)
-                                } else {
-                                    pendingStore.clear()
-                                    TransactionResultMapper.toMap(parsed)
-                                }
-                                sendEvent(txType.kind, txId, response = PluginResponse.Success(mapperResult))
+                                runOnMain { pendingBatchResults[txId] = BatchMapper.toMap(parsed) }
                             } catch (e: Exception) {
-                                sendEvent(txType.kind, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Parse error: ${e.message}"))
-                            } finally {
-                                serviceClient.markInFlightEnd()
+                                GpTomLog.e("Failed to parse V2 batch result: ${e.message}")
                             }
                         }
                     })
+
+                    activePollKinds[txId] = txType.kind
+                    pollTransactionState(svc, txType, txId, startedAtMs = System.currentTimeMillis())
                 } catch (e: Exception) {
                     serviceClient.markInFlightEnd()
                     sendEvent(txType.kind, txId, response = PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Failed: ${e.message}"))
@@ -267,6 +270,141 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
             },
             onError = { error -> sendEvent(txType.kind, txId, response = error) }
         )
+    }
+
+    private fun pollTransactionState(
+        svc: cn.nexgo.smartconnect.ISmartconnectService,
+        txType: TransactionType,
+        txId: String,
+        startedAtMs: Long,
+    ) {
+        if (cancelledPolls.remove(txId)) {
+            activePollKinds.remove(txId)
+            pendingBatchResults.remove(txId)
+            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.CANCELLED, "Polling cancelled"))
+            serviceClient.markInFlightEnd()
+            return
+        }
+
+        if (System.currentTimeMillis() - startedAtMs > POLL_TIMEOUT_MS) {
+            activePollKinds.remove(txId)
+            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.TIMEOUT, "Transaction polling timed out"))
+            serviceClient.markInFlightEnd()
+            return
+        }
+
+        try {
+            svc.stateRequest(txId, object : IStateResultListener.Stub() {
+                override fun onStateResult(resultJson: String?) {
+                    GpTomLog.i("polling onStateResult", resultJson)
+
+                    val state: Int? = try {
+                        gson.fromJson(resultJson, cn.nexgo.smartconnect.model.StateResultEntity::class.java)?.state
+                    } catch (_: Exception) {
+                        null
+                    }
+
+                    when (state) {
+                        STATE_COMPLETED -> handleCompletedState(svc, txType, txId)
+                        STATE_CANCELLED -> {
+                            activePollKinds.remove(txId)
+                            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.FAILED, "Transaction cancelled"))
+                            serviceClient.markInFlightEnd()
+                        }
+                        STATE_ERROR -> {
+                            activePollKinds.remove(txId)
+                            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.FAILED, "Transaction error"))
+                            serviceClient.markInFlightEnd()
+                        }
+                        else -> {
+                            mainHandler.postDelayed({
+                                pollTransactionState(svc, txType, txId, startedAtMs)
+                            }, POLL_INTERVAL_MS)
+                        }
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            activePollKinds.remove(txId)
+            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "State poll failed: ${e.message}"))
+            serviceClient.markInFlightEnd()
+        }
+    }
+
+    private fun cancelPolling(call: MethodCall, result: MethodChannel.Result) {
+        val args = call.arguments as? Map<*, *> ?: emptyMap<Any, Any>()
+        val txId = args[JsonKeys.transactionId] as? String
+
+        if (txId.isNullOrBlank()) {
+            sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "${JsonKeys.transactionId} is required"))
+            return
+        }
+
+        if (activePollKinds.containsKey(txId)) {
+            cancelledPolls.add(txId)
+            sendMethodResult(result, PluginResponse.Success(null))
+        } else {
+            sendMethodResult(result, PluginResponse.Error(ResultCodes.FAILED, "No active polling for transactionId"))
+        }
+    }
+
+    private fun handleCompletedState(
+        svc: cn.nexgo.smartconnect.ISmartconnectService,
+        txType: TransactionType,
+        txId: String,
+        retries: Int = 0,
+    ) {
+        if (cancelledPolls.remove(txId)) {
+            activePollKinds.remove(txId)
+            pendingBatchResults.remove(txId)
+            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.CANCELLED, "Polling cancelled"))
+            serviceClient.markInFlightEnd()
+            return
+        }
+
+        if (txType == TransactionType.CLOSE_BATCH) {
+            val cached = pendingBatchResults.remove(txId)
+            if (cached != null) {
+                activePollKinds.remove(txId)
+                sendEvent(txType.kind, txId, PluginResponse.Success(cached))
+                serviceClient.markInFlightEnd()
+                return
+            }
+            // V2 callback may not have arrived yet — wait briefly, up to ~2s
+            if (retries < BATCH_RESULT_MAX_RETRIES) {
+                mainHandler.postDelayed({
+                    handleCompletedState(svc, txType, txId, retries + 1)
+                }, POLL_INTERVAL_MS)
+                return
+            }
+            activePollKinds.remove(txId)
+            sendEvent(txType.kind, txId, PluginResponse.Success(emptyMap<String, Any?>()))
+            serviceClient.markInFlightEnd()
+            return
+        }
+
+        pendingStore.clear()
+
+        try {
+            svc.TransactionInquire(txId, object : IInquireResultListener.Stub() {
+                override fun onInquireResult(p0: cn.nexgo.smartconnect.model.InquireResultEntity) {
+                    activePollKinds.remove(txId)
+                    try {
+                        val mapped = InquireResultMapper.toMap(p0)
+                        GpTomLog.i("handleCompletedState inquire result", mapped)
+                        sendEvent(txType.kind, txId, PluginResponse.Success(mapped))
+                    } catch (e: Exception) {
+                        sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Inquire mapping failed: ${e.message}"))
+                    } finally {
+                        serviceClient.markInFlightEnd()
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            activePollKinds.remove(txId)
+            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Inquire call failed: ${e.message}"))
+            serviceClient.markInFlightEnd()
+        }
     }
 
     private fun getState(call: MethodCall, result: MethodChannel.Result) {
@@ -373,5 +511,13 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
         const val KIND_STATE = "state"
         const val KIND_DETAIL = "detail"
         const val KIND_APP_STATUS = "appStatus"
+
+        private const val POLL_INTERVAL_MS = 500L
+        private const val POLL_TIMEOUT_MS = 5L * 60L * 1000L
+        private const val BATCH_RESULT_MAX_RETRIES = 4
+
+        private const val STATE_COMPLETED = 6
+        private const val STATE_CANCELLED = 7
+        private const val STATE_ERROR = 8
     }
 }
