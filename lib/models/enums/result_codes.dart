@@ -26,4 +26,5 @@ enum GpTomResultCode {
   invalidCode,
   invalidUserName,
   terminalSetupFailed,
+  cancelled,
 }

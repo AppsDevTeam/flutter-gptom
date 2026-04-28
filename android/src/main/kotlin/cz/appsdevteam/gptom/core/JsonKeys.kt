@@ -91,13 +91,6 @@ object JsonKeys {
     const val error = "error"
     const val emvAppLabel = "emvAppLabel"
 
-    const val batchTotalNum = "batchTotalNum"
-    const val batchTotalAmount = "batchTotalAmount"
-    const val batchSaleNum = "batchSaleNum"
-    const val batchSaleAmount = "batchSaleAmount"
-    const val batchVoidNum = "batchVoidNum"
-    const val batchVoidAmount = "batchVoidAmount"
-
     const val totalCount = "totalCount"
     const val totalAmount = "totalAmount"
     const val saleCount = "saleCount"

@@ -43,14 +43,6 @@ object TransactionResultMapper {
         JsonKeys.sequenceNumber to e.sequenceNumber,
         JsonKeys.batchNumber to e.batchNumber,
 
-        JsonKeys.batchTotalNum to e.batchTotalNum,
-        JsonKeys.batchTotalAmount to e.batchTotalAmount,
-        JsonKeys.batchSaleNum to e.batchSaleNum,
-        JsonKeys.batchSaleAmount to e.batchSaleAmount,
-        JsonKeys.batchVoidNum to e.batchVoidNum,
-        JsonKeys.batchVoidAmount to e.batchVoidAmount,
-
-        JsonKeys.printByPaymentApp to e.printByPaymentApp,
         JsonKeys.cardProduct to e.cardProduct?.name,
         JsonKeys.receiptNumber to e.receiptNumber,
         JsonKeys.pinOk to e.isPinOk, 

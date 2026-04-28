@@ -46,14 +46,6 @@ class GpTomTransactionResult {
   final String? sequenceNumber;
   final String? batchNumber;
 
-  final int? batchTotalNum;
-  final int? batchTotalAmount;
-  final int? batchSaleNum;
-  final int? batchSaleAmount;
-  final int? batchVoidNum;
-  final int? batchVoidAmount;
-
-  final bool? printByPaymentApp;
   final GpTomCardProduct? cardProduct;
   final String? receiptNumber;
   final bool? pinOk;
@@ -89,13 +81,6 @@ class GpTomTransactionResult {
     required this.emvAppLabel,
     required this.sequenceNumber,
     required this.batchNumber,
-    required this.batchTotalNum,
-    required this.batchTotalAmount,
-    required this.batchSaleNum,
-    required this.batchSaleAmount,
-    required this.batchVoidNum,
-    required this.batchVoidAmount,
-    required this.printByPaymentApp,
     required this.cardProduct,
     required this.receiptNumber,
     required this.pinOk,
@@ -139,13 +124,6 @@ class GpTomTransactionResult {
       emvAppLabel: JsonUtils.asString(json[JsonKeys.emvAppLabel]),
       sequenceNumber: JsonUtils.asString(json[JsonKeys.sequenceNumber]),
       batchNumber: JsonUtils.asString(json[JsonKeys.batchNumber]),
-      batchTotalNum: JsonUtils.asInt(json[JsonKeys.batchTotalNum]),
-      batchTotalAmount: JsonUtils.asInt(json[JsonKeys.batchTotalAmount]),
-      batchSaleNum: JsonUtils.asInt(json[JsonKeys.batchSaleNum]),
-      batchSaleAmount: JsonUtils.asInt(json[JsonKeys.batchSaleAmount]),
-      batchVoidNum: JsonUtils.asInt(json[JsonKeys.batchVoidNum]),
-      batchVoidAmount: JsonUtils.asInt(json[JsonKeys.batchVoidAmount]),
-      printByPaymentApp: JsonUtils.asBool(json[JsonKeys.printByPaymentApp]),
       cardProduct: GpTomCardProduct.fromJson(json[JsonKeys.cardProduct]),
       receiptNumber: JsonUtils.asString(json[JsonKeys.receiptNumber]),
       pinOk: JsonUtils.asBool(json[JsonKeys.pinOk]),
@@ -184,13 +162,6 @@ class GpTomTransactionResult {
       JsonKeys.emvAppLabel: emvAppLabel,
       JsonKeys.sequenceNumber: sequenceNumber,
       JsonKeys.batchNumber: batchNumber,
-      JsonKeys.batchTotalNum: batchTotalNum,
-      JsonKeys.batchTotalAmount: batchTotalAmount,
-      JsonKeys.batchSaleNum: batchSaleNum,
-      JsonKeys.batchSaleAmount: batchSaleAmount,
-      JsonKeys.batchVoidNum: batchVoidNum,
-      JsonKeys.batchVoidAmount: batchVoidAmount,
-      JsonKeys.printByPaymentApp: printByPaymentApp,
       JsonKeys.cardProduct: cardProduct?.toJson(),
       JsonKeys.receiptNumber: receiptNumber,
       JsonKeys.pinOk: pinOk,

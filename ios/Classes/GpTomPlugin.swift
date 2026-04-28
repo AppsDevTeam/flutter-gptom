@@ -66,6 +66,8 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         case "clearPending":
             pendingStore.clear()
             sendMethodResult(result, .success(NSNull()))
+        case "cancelPolling":
+            sendMethodResult(result, .error(code: ResultCodes.unsupportedOnPlatform, message: "cancelPolling is not supported on iOS"))
         default:
             result(FlutterMethodNotImplemented)
         }

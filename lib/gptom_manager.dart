@@ -134,6 +134,12 @@ class GpTomManager {
     return _invoke<void>('clearPending');
   }
 
+  /// Cancels active state polling for a transaction (Android only).
+  /// Sends a `cancelled` event to the matching result stream.
+  static Future<GpTomResult<void>> cancelPolling(String transactionId) async {
+    return _invoke<void>('cancelPolling', args: {JsonKeys.transactionId: transactionId});
+  }
+
   static Future<GpTomResult<T>> _invoke<T>(
     String method, {
     Map<String, dynamic>? args,

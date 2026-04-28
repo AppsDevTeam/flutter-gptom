@@ -26,6 +26,7 @@ enum ResultCodes {
     static let invalidCode = "invalidCode"
     static let invalidUserName = "invalidUserName"
     static let terminalSetupFailed = "terminalSetupFailed"
+    static let cancelled = "cancelled"
 
     static func from(_ error: DeeplinkError?) -> String {
         guard let error else {
