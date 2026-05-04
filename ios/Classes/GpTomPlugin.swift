@@ -304,7 +304,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         sendMethodResult(result, .success(NSNull()))
 
         let path = deeplinkPathForKind(Kinds.detail).path
-        var params: [String: String?] = [
+        let params: [String: String?] = [
             DeeplinkParamKeys.requestID: txId,
             DeeplinkParamKeys.redirectUrl: buildRedirectUrl(
                 schemeUrl: redirectScheme, path: path),

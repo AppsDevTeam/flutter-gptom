@@ -11,9 +11,9 @@ final class GpTomLog {
     private static func log(_ lvl: String, _ msg: String, _ data: [String: Any?]) {
         guard enabled else { return }
         if data.isEmpty {
-            NSLog("ADT_GP_TOM [\(lvl)] \(msg)")
+            NSLog("%@", "ADT_GP_TOM [\(lvl)] \(msg)")
         } else {
-            NSLog("ADT_GP_TOM [\(lvl)] \(msg) \(data)")
+            NSLog("%@", "ADT_GP_TOM [\(lvl)] \(msg) \(data)")
         }
     }
 }

@@ -310,11 +310,14 @@ class _DemoHomeState extends State<DemoHome> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('GP tom Example')),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -523,7 +526,8 @@ class _DemoHomeState extends State<DemoHome> {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
