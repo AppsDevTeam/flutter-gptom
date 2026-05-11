@@ -27,8 +27,32 @@ sed -i '' "s/ref: v[0-9]*\.[0-9]*\.[0-9]*/ref: $TAG/" README.md
 
 echo "Updated README.md ref to $TAG"
 
+# Prepend CHANGELOG entry with commits since the previous tag
+PREV_TAG=$(git tag -l "v*" | sort -V | tail -1)
+if [ -n "$PREV_TAG" ]; then
+    COMMITS=$(git log --pretty=format:"- %s" --no-merges "${PREV_TAG}..HEAD" | grep -v "^- Release v")
+else
+    COMMITS=$(git log --pretty=format:"- %s" --no-merges | grep -v "^- Release v")
+fi
+
+if [ -n "$COMMITS" ]; then
+    TMP=$(mktemp)
+    {
+        echo "# Changelog"
+        echo ""
+        echo "## $TAG"
+        echo ""
+        echo "$COMMITS"
+        echo ""
+        # Append existing entries (skip the original "# Changelog" header line)
+        tail -n +2 CHANGELOG.md
+    } > "$TMP"
+    mv "$TMP" CHANGELOG.md
+    echo "Updated CHANGELOG.md with $TAG"
+fi
+
 # Commit and tag
-git add README.md
+git add README.md CHANGELOG.md
 git commit -m "Release $TAG"
 git tag "$TAG"
 

@@ -10,10 +10,13 @@ Flutter plugin for **GP tom** payments (**Android App2App** + **iOS Deeplinks**)
 
 - `isInstalled()`
 - `register()`
-- `transaction()` (sale / storno / closeBatch)
+- `transaction()` (sale / storno / refund / closeBatch)
 - `getState()`
 - `getDetail()`
-- Event streams for results (sale/cancel/closeBatch/state/detail)
+- `cancelPolling()` (Android only — stops waiting on a state poll)
+- Event streams for results (sale / refund / cancel / closeBatch / state / detail)
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ---
 
@@ -48,7 +51,7 @@ await GpTomManager.init(
   GpTomInitOptions(
     isDevelopment: true, // DEV / PROD
     debugLogs: true,
-    iosRedirectUrl: "myapp://gptom", // iOS only (required on iOS)
+    iosRedirectScheme: "myapp://gptom", // iOS only (required on iOS)
   ),
 );
 ```
@@ -60,6 +63,10 @@ await GpTomManager.init(
 ```dart
 GpTomManager.saleResults.listen((r) {
   print("EVENT SALE: $r");
+});
+
+GpTomManager.refundResults.listen((r) {
+  print("EVENT REFUND: $r");
 });
 
 GpTomManager.cancelResults.listen((r) {
@@ -140,7 +147,25 @@ print(res);
 
 ---
 
-### 7) Close batch example
+### 7) Refund example
+
+Refund is a standalone return of funds (not linked to an original transaction).
+
+```dart
+final res = await GpTomManager.refund(
+  GpTomTransactionRequest.refund(
+    transactionId: txId!,
+    amount: 100, // minor units
+    originReferenceNum: "flutter_ref_1",
+  ),
+);
+
+print(res);
+```
+
+---
+
+### 8) Close batch example
 
 ```dart
 final res = await GpTomManager.closeBatch();
@@ -189,7 +214,7 @@ Then provide it to init:
 ```dart
 await GpTomManager.init(
   GpTomInitOptions(
-    iosRedirectUrl: "myapp://gptom",
+    iosRedirectScheme: "myapp://gptom",
   ),
 );
 ```
@@ -203,6 +228,16 @@ Android uses **App2App (AIDL)** integration.
 No special manifest setup is required besides having GP tom installed.
 
 **Current bundled AAR version:** `1.28.0`
+
+### State polling
+
+Android resolves transaction results via periodic state polling (every 500 ms, 5 min timeout). When `state == COMPLETED`, the plugin calls `transactionInquire` to fetch the full result. You can stop the wait early:
+
+```dart
+await GpTomManager.cancelPolling(transactionId);
+```
+
+The matching result stream receives a `cancelled` event. iOS returns `unsupportedOnPlatform` (no polling there).
 
 ---
 
