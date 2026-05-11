@@ -19,6 +19,7 @@ import cz.appsdevteam.gptom.mappers.TransactionResultMapper
 import cz.appsdevteam.gptom.mappers.RegisterResultMapper
 import cz.appsdevteam.gptom.mappers.StateResultMapper
 import cz.appsdevteam.gptom.mappers.BatchMapper
+import cz.appsdevteam.gptom.mappers.ErrorCodeMapper
 import cz.appsdevteam.gptom.models.PluginResponse
 import cz.appsdevteam.gptom.models.TransactionType
 import cz.appsdevteam.gptom.models.ResultCodes
@@ -161,14 +162,21 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                             }
 
                             val txId = parsed.transactionId
+                            val resultMap = RegisterResultMapper.toMap(parsed, originRef)
+
                             if (txId.isNullOrBlank()) {
-                                sendMethodResult(result, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "TransactionId is null/blank"))
+                                val code = ErrorCodeMapper.classify(parsed.error, parsed.resultCode)
+                                val message = parsed.error?.exception
+                                    ?: parsed.responseMessage
+                                    ?: "Register failed (resultCode=${parsed.resultCode})"
+                                sendMethodResult(result, PluginResponse.Error(code, message, resultMap))
+                                serviceClient.touch()
                                 return
                             }
 
                             if (persist) pendingStore.save(txId, originRef, amsId = null)
 
-                            sendMethodResult(result, PluginResponse.Success(RegisterResultMapper.toMap(parsed, originRef)))
+                            sendMethodResult(result, PluginResponse.Success(resultMap))
                             serviceClient.touch()
                         }
                     })
