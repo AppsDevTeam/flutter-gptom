@@ -23,17 +23,27 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Installation
 
-Add dependency:
+Add dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   gptom:
     git:
-      url: git@github.com:AppsDevTeam/flutter-gptom.git
+      url: https://github.com/AppsDevTeam/flutter-gptom.git
       ref: v1.3.0
 ```
 
-After cloning, enable git hooks:
+Then run:
+
+```bash
+flutter pub get
+```
+
+> Pin to a specific tag (`ref: v1.3.0`) to avoid breakage when new versions land on `main`.
+
+### Contributors only
+
+After cloning this repo, enable git hooks:
 
 ```bash
 git config core.hooksPath scripts/hooks
@@ -258,6 +268,81 @@ await GpTomManager.cancelPolling(transactionId);
 ```
 
 The matching result stream receives a `cancelled` event. iOS returns `unsupportedOnPlatform` (no polling there).
+
+---
+
+## Result codes
+
+Each `GpTomResult` returns two kinds of codes:
+
+### 1) Plugin code — `GpTomResultCode` (`result.code`)
+
+Tells you whether the plugin call itself succeeded or how it failed.
+
+| Code | Meaning |
+|---|---|
+| `ok` | Call succeeded; `result.data` is populated |
+| `cancelled` | User cancelled the operation (PIN cancel, polling cancel, deeplink cancel) |
+| `timeout` | Operation timed out (Android polling > 5 min) |
+| `failed` | Generic failure (declined, refused, ...) |
+| `internalError` | Unexpected error (parse error, native crash, ...) |
+| `notInitialized` | `GpTomManager.init()` wasn't called |
+| `notInstalled` | GP tom app is not installed |
+| `unsupportedOnPlatform` | Feature not available on this OS (e.g. `cancelPolling` on iOS) |
+| `invalidArgument` | Missing or malformed request parameter |
+| `invalidDeeplink` | iOS deeplink could not be parsed |
+| `invalidClientId` | `clientId` rejected by GP tom |
+| `invalidCredentials` | User logged out, wrong password, expired session |
+| `invalidCode` | Auth code invalid or expired |
+| `invalidUserName` | Wrong username |
+| `invalidAmount` | Amount out of range |
+| `passwordChangeRequired` | Password change required before continuing |
+| `passwordPendingConfirmation` | Password change is pending confirmation |
+| `merchantInfoMissing` | Merchant configuration missing |
+| `tidNotAssignedToThisUser` | TID not assigned / not active / not selected |
+| `tidAlreadyOccupied` | TID already reserved by another user/device |
+| `anotherTidUsedOnThisDevice` | Different TID is already in use on this device |
+| `terminalSetupFailed` | Terminal setup failed |
+| `cannotBeVoided` | Transaction already cancelled / completed and not voidable |
+| `unsupportedTransactionOperationOrType` | Operation/type not allowed for this merchant |
+| `networkError` | Network unavailable / HTTP error |
+| `failedTapToPay` | SoftPOS / tap-to-pay error |
+| `failedToCloseBatch` | Batch close was declined |
+| `serviceBindFailed` | Could not bind to GP tom AIDL service (Android) |
+
+### 2) ECR transaction code — `GpTomEcrResultCode` (`result.data.ecrResultCode`)
+
+For transactions (`saleResults`, `refundResults`, `cancelResults`), the ECR code carries the transaction outcome:
+
+| Code | Name | Meaning |
+|---|---|---|
+| `0` | `ecrSuccess` | Transaction was successful |
+| `-1` | `ecrFailed` | Transaction failed |
+| `-2` | `ecrTransactionIdInvalid` | Invalid transaction ID |
+| `-3` | `ecrTransactionNotFound` | Transaction not found (you can retry) |
+| `-4` | `ecrTransactionDecline` | Transaction declined |
+| `-5` | `ecrTransactionAlreadyVoided` | Transaction was already cancelled |
+| `-6` | `ecrParameterInvalid` | Invalid parameters |
+| `-7` | `ecrUnauthorized` | User not authorized |
+| `-8` | `ecrNotAllowed` | Operation not allowed |
+| `-9` | `ecrWrongStatus` | Input from user needed in GP tom app |
+
+See [GP tom result codes](https://www.gptom.com/docs/api/app2app/result-codes/) for full reference.
+
+### Recommended handling
+
+```dart
+if (result.code != GpTomResultCode.ok) {
+  // plugin / communication error
+  showError(result.message);
+} else if (result.data?.ecrResultCode != GpTomEcrResultCode.ecrSuccess) {
+  // transaction was processed but not approved
+  showDeclined(result.data?.responseMessage);
+} else {
+  // success
+  showSuccess(result.data!);
+}
+```
 
 ---
 
