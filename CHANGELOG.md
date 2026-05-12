@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.3
+
+- Mapped Android state ERROR error.code to specific ResultCodes with full state data passthrough
+- Backfilled CHANGELOG, updated README with refund and cancelPolling, auto-update CHANGELOG in release script
+
+
 ## v1.2.2
 
 - Propagate AAR register errors to Flutter with mapped error codes and full data
