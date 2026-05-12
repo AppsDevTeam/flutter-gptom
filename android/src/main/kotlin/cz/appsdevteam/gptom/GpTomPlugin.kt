@@ -306,22 +306,33 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                 override fun onStateResult(resultJson: String?) {
                     GpTomLog.i("polling onStateResult", resultJson)
 
-                    val state: Int? = try {
-                        gson.fromJson(resultJson, cn.nexgo.smartconnect.model.StateResultEntity::class.java)?.state
+                    val parsed: cn.nexgo.smartconnect.model.StateResultEntity? = try {
+                        gson.fromJson(resultJson, cn.nexgo.smartconnect.model.StateResultEntity::class.java)
                     } catch (_: Exception) {
                         null
                     }
 
-                    when (state) {
+                    when (parsed?.state) {
                         STATE_COMPLETED -> handleCompletedState(svc, txType, txId)
                         STATE_CANCELLED -> {
                             activePollKinds.remove(txId)
-                            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.CANCELLED, "Transaction cancelled"))
+                            sendEvent(txType.kind, txId, PluginResponse.Error(
+                                ResultCodes.CANCELLED,
+                                "Transaction cancelled",
+                                StateResultMapper.toMap(parsed),
+                            ))
                             serviceClient.markInFlightEnd()
                         }
                         STATE_ERROR -> {
                             activePollKinds.remove(txId)
-                            sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.FAILED, "Transaction error"))
+                            val code = ErrorCodeMapper.classifyV2(parsed.error)
+                            val message = parsed.error?.let { "Transaction error (code=${it.code})" }
+                                ?: "Transaction error"
+                            sendEvent(txType.kind, txId, PluginResponse.Error(
+                                code,
+                                message,
+                                StateResultMapper.toMap(parsed),
+                            ))
                             serviceClient.markInFlightEnd()
                         }
                         else -> {
