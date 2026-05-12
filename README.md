@@ -11,6 +11,7 @@ Flutter plugin for **GP tom** payments (**Android App2App** + **iOS Deeplinks**)
 - `isInstalled()`
 - `register()`
 - `transaction()` (sale / storno / refund / closeBatch)
+- `closeBatch()` / `closeBatchLegacy()`
 - `getState()`
 - `getDetail()`
 - `cancelPolling()` (Android only — stops waiting on a state poll)
@@ -171,6 +172,25 @@ print(res);
 final res = await GpTomManager.closeBatch();
 print(res);
 ```
+
+On Android `closeBatch()` resolves the result via state polling + `transactionInquire`,
+which returns minimal data (no batch totals like `saleAmount`, `voidAmount`, ...).
+On iOS it opens the `batch/close` deeplink and reads the full `Batch` from the response.
+
+#### Legacy (full batch totals on Android)
+
+If you need full batch totals on Android (saleAmount, totalAmount, voidAmount, ...),
+use the legacy V2 callback flow:
+
+```dart
+final res = await GpTomManager.closeBatchLegacy();
+print(res);
+```
+
+- Android: bypasses state polling and reads `TransactionResultV2Entity` directly via `BatchMapper`.
+- iOS: identical to `closeBatch()` (deeplink flow).
+
+Both methods deliver the result via the `closeBatchResults` stream.
 
 ---
 
