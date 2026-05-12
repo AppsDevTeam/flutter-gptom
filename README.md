@@ -29,7 +29,7 @@ dependencies:
   gptom:
     git:
       url: git@github.com:AppsDevTeam/flutter-gptom.git
-      ref: v1.2.3
+      ref: v1.3.0
 ```
 
 After cloning, enable git hooks:

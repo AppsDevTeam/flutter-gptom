@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3.0
+
+- Added closeBatchLegacy method using V2 callback flow, simplified regular closeBatch to pure polling
+
+
 ## v1.2.3
 
 - Mapped Android state ERROR error.code to specific ResultCodes with full state data passthrough
