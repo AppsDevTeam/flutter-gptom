@@ -44,7 +44,6 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
     private val gson = Gson()
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    private val pendingBatchResults = mutableMapOf<String, Map<String, Any?>>()
     private val cancelledPolls = mutableSetOf<String>()
     private val activePollKinds = mutableMapOf<String, String>()
 
@@ -113,6 +112,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                 sendMethodResult(result, PluginResponse.Success(null))
             }
             "cancelPolling" -> cancelPolling(call, result)
+            "closeBatchLegacy" -> closeBatchLegacy(call, result)
             else -> result.notImplemented()
         }
     }
@@ -255,17 +255,9 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
                         override fun onTransactionResult(p0: cn.nexgo.smartconnect.model.TransactionResultEntity?) {}
 
                         override fun onTransactionV2Result(resultJson: String?) {
-                            GpTomLog.i("onTransactionV2Result", resultJson)
-                            // Only closeBatch needs the V2 callback data (batch totals).
-                            // Sale/refund/cancel rely entirely on state polling + inquire.
-                            if (txType != TransactionType.CLOSE_BATCH) return
-
-                            try {
-                                val parsed = gson.fromJson(resultJson, cn.nexgo.smartconnect.model.TransactionResultV2Entity::class.java)
-                                runOnMain { pendingBatchResults[txId] = BatchMapper.toMap(parsed) }
-                            } catch (e: Exception) {
-                                GpTomLog.e("Failed to parse V2 batch result: ${e.message}")
-                            }
+                            // Ignored — result is resolved via state polling + inquire.
+                            // (closeBatchLegacy() uses the V2 callback path directly.)
+                            GpTomLog.i("onTransactionV2Result (ignored)", resultJson)
                         }
                     })
 
@@ -288,7 +280,6 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
     ) {
         if (cancelledPolls.remove(txId)) {
             activePollKinds.remove(txId)
-            pendingBatchResults.remove(txId)
             sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.CANCELLED, "Polling cancelled"))
             serviceClient.markInFlightEnd()
             return
@@ -367,37 +358,70 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
         }
     }
 
+    /**
+     * Legacy closeBatch flow (no state polling).
+     * Calls transactionRequestV2 with CLOSE_BATCH type and emits the result
+     * directly from the V2 callback via BatchMapper.
+     */
+    private fun closeBatchLegacy(call: MethodCall, result: MethodChannel.Result) {
+        GpTomLog.i("closeBatchLegacy() called", data = mapOf("args" to call.arguments))
+
+        val args = call.arguments as? Map<*, *> ?: emptyMap<Any, Any>()
+        val txId = args[JsonKeys.transactionId] as? String
+        val clientId = args[JsonKeys.clientId] as? String
+        val txType = TransactionType.CLOSE_BATCH
+
+        if (txId.isNullOrBlank()) {
+            sendMethodResult(result, PluginResponse.Error(ResultCodes.INVALID_ARGUMENT, "${JsonKeys.transactionId} is required"))
+            return
+        }
+
+        sendMethodResult(result, PluginResponse.Success(null))
+
+        serviceClient.ensureBoundAsync(
+            onReady = { svc ->
+                try {
+                    serviceClient.markInFlightStart()
+
+                    val entity = cn.nexgo.smartconnect.model.TransactionRequestV2Entity().apply {
+                        transactionID = txId
+                        transactionType = txType.code
+                        clientId?.takeIf { it.isNotBlank() }?.let { clientID = it }
+                        printByPaymentApp = (args[JsonKeys.printByPaymentApp] as? Boolean) ?: true
+                    }
+
+                    svc.transactionRequestV2(gson.toJson(entity), object : ITransactionResultListener.Stub() {
+                        override fun onTransactionResult(p0: cn.nexgo.smartconnect.model.TransactionResultEntity?) {}
+
+                        override fun onTransactionV2Result(resultJson: String?) {
+                            GpTomLog.i("legacy onTransactionV2Result", resultJson)
+                            try {
+                                val parsed = gson.fromJson(resultJson, cn.nexgo.smartconnect.model.TransactionResultV2Entity::class.java)
+                                sendEvent(txType.kind, txId, PluginResponse.Success(BatchMapper.toMap(parsed)))
+                            } catch (e: Exception) {
+                                sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Parse error: ${e.message}"))
+                            } finally {
+                                serviceClient.markInFlightEnd()
+                            }
+                        }
+                    })
+                } catch (e: Exception) {
+                    serviceClient.markInFlightEnd()
+                    sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.INTERNAL_ERROR, "Failed: ${e.message}"))
+                }
+            },
+            onError = { error -> sendEvent(txType.kind, txId, response = error) }
+        )
+    }
+
     private fun handleCompletedState(
         svc: cn.nexgo.smartconnect.ISmartconnectService,
         txType: TransactionType,
         txId: String,
-        retries: Int = 0,
     ) {
         if (cancelledPolls.remove(txId)) {
             activePollKinds.remove(txId)
-            pendingBatchResults.remove(txId)
             sendEvent(txType.kind, txId, PluginResponse.Error(ResultCodes.CANCELLED, "Polling cancelled"))
-            serviceClient.markInFlightEnd()
-            return
-        }
-
-        if (txType == TransactionType.CLOSE_BATCH) {
-            val cached = pendingBatchResults.remove(txId)
-            if (cached != null) {
-                activePollKinds.remove(txId)
-                sendEvent(txType.kind, txId, PluginResponse.Success(cached))
-                serviceClient.markInFlightEnd()
-                return
-            }
-            // V2 callback may not have arrived yet — wait briefly, up to ~2s
-            if (retries < BATCH_RESULT_MAX_RETRIES) {
-                mainHandler.postDelayed({
-                    handleCompletedState(svc, txType, txId, retries + 1)
-                }, POLL_INTERVAL_MS)
-                return
-            }
-            activePollKinds.remove(txId)
-            sendEvent(txType.kind, txId, PluginResponse.Success(emptyMap<String, Any?>()))
             serviceClient.markInFlightEnd()
             return
         }
@@ -533,7 +557,6 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
 
         private const val POLL_INTERVAL_MS = 500L
         private const val POLL_TIMEOUT_MS = 5L * 60L * 1000L
-        private const val BATCH_RESULT_MAX_RETRIES = 4
 
         private const val STATE_COMPLETED = 6
         private const val STATE_CANCELLED = 7

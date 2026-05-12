@@ -68,6 +68,9 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             sendMethodResult(result, .success(NSNull()))
         case "cancelPolling":
             sendMethodResult(result, .error(code: ResultCodes.unsupportedOnPlatform, message: "cancelPolling is not supported on iOS"))
+        case "closeBatchLegacy":
+            // On iOS the flow is identical to the regular closeBatch (deeplink).
+            transaction(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }

@@ -127,6 +127,31 @@ class GpTomManager {
     );
   }
 
+  /// Legacy closeBatch flow.
+  ///
+  /// - Android: uses the original V2 callback path (no state polling). Result is
+  ///   mapped directly via `BatchMapper` from `TransactionResultV2Entity`.
+  /// - iOS: identical to [closeBatch] (deeplink flow).
+  ///
+  /// Both deliver the result via [closeBatchResults] stream.
+  static Future<GpTomResult<void>> closeBatchLegacy() async {
+    final reg = await register(GpTomRegisterRequest(originReferenceNum: null, clientId: null, persistPending: false));
+    final transactionId = reg.data?.transactionId;
+
+    if (reg.code != GpTomResultCode.ok || transactionId == null || transactionId.isEmpty) {
+      return GpTomResult<void>(
+        code: reg.code,
+        message: reg.message ?? 'closeBatchLegacy: register failed',
+        transactionId: transactionId,
+      );
+    }
+
+    return _invoke<void>('closeBatchLegacy', args: {
+      JsonKeys.transactionId: transactionId,
+      JsonKeys.transactionType: GpTomTransactionType.closeBatch.code,
+    });
+  }
+
   /// Reads pending record stored by the plugin (Android: after register; iOS: after opening deeplink).
   static Future<GpTomResult<GpTomPendingRequest?>> getPending() async {
     return _invoke<GpTomPendingRequest?>(
