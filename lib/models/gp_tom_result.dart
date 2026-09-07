@@ -7,7 +7,16 @@ import 'package:gptom/utils/json_utils.dart';
 class GpTomResult<T> {
   final GpTomResultCode code;
   final String? message;
+
+  /// The ID the caller passed into the operation (the one obtained from
+  /// `GpTomManager.register`), echoed back on both platforms so a result can
+  /// be correlated with the request that started it.
+  ///
+  /// This is *not* GP tom's own transaction ID — that one lives in the typed
+  /// payload (e.g. `GpTomTransactionResult.transactionId` / `asmId`) and is the
+  /// value to keep for a later storno.
   final String? transactionId;
+
   final T? data;
 
   const GpTomResult({required this.code, this.message, this.transactionId, this.data});

@@ -10,6 +10,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     private var redirectScheme: String = ""
 
     private let pendingStore = PendingStore()
+    private let correlationStore = CorrelationStore()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = GpTomPlugin()
@@ -235,6 +236,10 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         sendMethodResult(result, .success(NSNull()))
 
+        // Remember our ID before leaving the app — the return deeplink carries
+        // GP tom's own transaction ID, not the requestID we sent.
+        correlationStore.save(kind: kind, transactionId: txId)
+
         let path = deeplinkPathForKind(kind).path
 
         let clientId = args[JsonKeys.clientId] as? String
@@ -272,6 +277,9 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         let url = buildDeeplink(path: path, params: params)
         openDeeplink(url) { errorResponse in
+            // No return deeplink will arrive for an operation that never
+            // started, so drop the correlation right away.
+            self.correlationStore.clear(kind: kind)
             self.sendEvent(
                 kind: kind,
                 transactionId: txId,
@@ -306,6 +314,8 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         sendMethodResult(result, .success(NSNull()))
 
+        correlationStore.save(kind: Kinds.detail, transactionId: txId)
+
         let path = deeplinkPathForKind(Kinds.detail).path
         let params: [String: String?] = [
             DeeplinkParamKeys.requestID: txId,
@@ -315,6 +325,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         let url = buildDeeplink(path: path, params: params)
         openDeeplink(url) { errorResponse in
+            self.correlationStore.clear(kind: Kinds.detail)
             self.sendEvent(
                 kind: Kinds.detail,
                 transactionId: txId,
@@ -345,7 +356,9 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         }
 
         var kind = Kinds.info
-        var transactionId: String? = nil
+        // GP tom's own transaction ID from the result payload — used only when
+        // we have no correlation record for the returning operation.
+        var payloadTransactionId: String? = nil
         var clearPending = true
         var response: PluginResponse = .error(
             code: ResultCodes.internalError,
@@ -356,7 +369,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         case .createTransaction(let tx, let refusal, let status, let error):
             kind = Kinds.sale
-            transactionId = tx?.transactionID ?? (pendingStore.read()?[JsonKeys.transactionId] as? String)
+            payloadTransactionId = tx?.transactionID
 
             let data = tx.map { TransactionMapper.toMap($0, transactionType: 1) }
 
@@ -369,7 +382,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         case .refundTransaction(let tx, let refusal, let status, let error):
             kind = Kinds.refund
-            transactionId = tx?.transactionID ?? (pendingStore.read()?[JsonKeys.transactionId] as? String)
+            payloadTransactionId = tx?.transactionID
 
             let data = tx.map { TransactionMapper.toMap($0, transactionType: 3) }
 
@@ -382,7 +395,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
         case .cancelTransaction(let tx, let refusal, let status, let error):
             kind = Kinds.cancel
-            transactionId = tx?.transactionID ?? (pendingStore.read()?[JsonKeys.transactionId] as? String)
+            payloadTransactionId = tx?.transactionID
 
             let data = tx.map { TransactionMapper.toMap($0, transactionType: 2) }
 
@@ -452,9 +465,14 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
             pendingStore.clear()
         }
 
+        // The caller's ID wins: it is what the Flutter side logged and stores
+        // on the order. GP tom's own ID stays inside `data`.
+        let correlatedTransactionId = correlationStore.read(kind: kind)
+        correlationStore.clear(kind: kind)
+
         sendEvent(
             kind: kind,
-            transactionId: transactionId,
+            transactionId: correlatedTransactionId ?? payloadTransactionId,
             response: response
         )
 

@@ -11,8 +11,14 @@ import 'package:meta/meta.dart';
 
 /// Result of a started transaction/cancel/refund call.
 ///
-/// - Android: `transactionId` is the ID returned by register (and used for state/inquire).
-/// - iOS: `transactionId` is the internally generated requestID (for correlation/recovery).
+/// [transactionId] here is GP tom's own ID for the transaction, not the ID the
+/// caller passed in:
+/// - Android: `trasanctionID` from `transactionInquire`.
+/// - iOS: `transactionID` from the returned receipt (see also [asmId], the
+///   `amsID` used as `originTransactionId` when cancelling).
+///
+/// To correlate the result with the request that started it, use
+/// `GpTomResult.transactionId` on the enclosing envelope instead.
 @immutable
 class GpTomTransactionResult {
   final int result;
