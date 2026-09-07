@@ -19,8 +19,10 @@ class PendingStore(ctx: Context) {
     }
 
     fun read(): Map<String, Any?>? {
+        // Only the transactionId decides whether a pending record exists —
+        // originReferenceNum is optional (refund and closeBatch register without one).
         val tx = prefs.getString(KEY_TX, null) ?: return null
-        val ref = prefs.getString(KEY_REF, null) ?: return null
+        val ref = prefs.getString(KEY_REF, null)
         val createdAtMs = prefs.getLong(KEY_CREATED_AT, 0L)
         val ams = prefs.getString(KEY_AMS, null)
 

@@ -352,6 +352,20 @@ if (result.code != GpTomResultCode.ok) {
 - For `storno` you typically need `originTransactionId` (the original transaction to cancel).
 - Results are delivered through event streams.
 
+### Two transaction IDs
+
+A result carries two different IDs — do not mix them up:
+
+| Field | Meaning |
+|---|---|
+| `result.transactionId` | The ID **you** passed in (from `register()`). Always echoed back on both platforms, for every operation and every outcome (success, decline, cancel, error, `closeBatch`). Use it to pair the result with your own request/log record. |
+| `result.data?.transactionId` | **GP tom's** own ID for the transaction (Android: `transactionInquire`; iOS: the returned receipt). Empty when GP tom returned no payload. Keep it if you need to cancel the transaction later (on iOS use `data?.asmId`, the `amsID`). |
+
+On iOS the return deeplink does not echo the `requestID` back, so the plugin
+remembers it itself for the duration of the operation — independent of the
+`persistPending` flag, which only controls the client-visible `getPending()`
+record.
+
 ---
 
 ## Third-party notices
