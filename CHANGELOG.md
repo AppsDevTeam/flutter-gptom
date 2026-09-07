@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.0
+
+- Fixed Android pending record being unreadable without originReferenceNum
+- GpTomResult.transactionId now always carries the caller's ID on iOS
+- Switched README install URL to HTTPS, documented plugin and ECR result codes
+- Documented closeBatchLegacy in README
+
+
 ## v1.3.0
 
 - Added closeBatchLegacy method using V2 callback flow, simplified regular closeBatch to pure polling
