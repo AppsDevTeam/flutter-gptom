@@ -29,6 +29,7 @@ public struct JsonKeys {
     public static let amsId = "amsId"
 
     public static let createdAtMs = "createdAtMs"
+    public static let level = "level"
 
     public static let resultCode = "resultCode"
     public static let responseMessage = "responseMessage"

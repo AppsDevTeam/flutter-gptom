@@ -9,6 +9,7 @@ import 'package:gptom/utils/json_keys.dart';
 class GpTomManager {
   static const MethodChannel _methodChannel = MethodChannel('adt_gptom/methods');
   static const EventChannel _eventsChannel = EventChannel('adt_gptom/events');
+  static const EventChannel _logsChannel = EventChannel('adt_gptom/logs');
 
   static bool _initialized = false;
 
@@ -17,6 +18,20 @@ class GpTomManager {
   static Stream<GpTomEvent> get events {
     return _events ??= _eventsChannel.receiveBroadcastStream().map(
       (e) => GpTomEvent.fromJson(Map<String, dynamic>.from(e)),
+    );
+  }
+
+  /// The plugin's own log lines, produced only while
+  /// [GpTomInitOptions.debugLogs] is on.
+  ///
+  /// Kept apart from [events] so it cannot leak into the typed result streams,
+  /// which are projections of that one. Lines logged before the first listener
+  /// attaches - init() among them - are buffered natively and delivered on
+  /// subscribe, so subscribing right after `init` misses nothing.
+  static Stream<GpTomLogEntry>? _logs;
+  static Stream<GpTomLogEntry> get logs {
+    return _logs ??= _logsChannel.receiveBroadcastStream().map(
+      (e) => GpTomLogEntry.fromJson(Map<String, dynamic>.from(e as Map)),
     );
   }
 

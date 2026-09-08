@@ -27,6 +27,7 @@ class JsonKeys {
   static const String amsId = 'amsId';
 
   static const String createdAtMs = 'createdAtMs';
+  static const String level = 'level';
 
   static const String resultCode = 'resultCode';
   static const String responseMessage = 'responseMessage';

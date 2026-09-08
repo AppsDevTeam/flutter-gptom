@@ -27,6 +27,7 @@ object JsonKeys {
     const val amsId = "amsId"
 
     const val createdAtMs = "createdAtMs"
+    const val level = "level"
 
     const val resultCode = "resultCode"
     const val responseMessage = "responseMessage"

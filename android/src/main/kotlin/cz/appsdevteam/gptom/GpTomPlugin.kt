@@ -32,6 +32,7 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
     private lateinit var appContext: Context
     private lateinit var methodChannel: MethodChannel
     private lateinit var eventChannel: EventChannel
+    private lateinit var logsChannel: EventChannel
     private var eventSink: EventChannel.EventSink? = null
 
     private var isInitialized = false
@@ -70,13 +71,30 @@ class GpTomPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel
 
         eventChannel = EventChannel(binding.binaryMessenger, Channels.EVENTS)
         eventChannel.setStreamHandler(this)
+
+        // Separate channel on purpose: the plugin's own log lines would otherwise
+        // show up in the typed result streams, which are projections of EVENTS.
+        logsChannel = EventChannel(binding.binaryMessenger, Channels.LOGS)
+        logsChannel.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                if (events == null) return
+
+                GpTomLog.attachSink { entry -> events.success(entry) }
+            }
+
+            override fun onCancel(arguments: Any?) {
+                GpTomLog.detachSink()
+            }
+        })
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         methodChannel.setMethodCallHandler(null)
         eventChannel.setStreamHandler(null)
+        logsChannel.setStreamHandler(null)
         serviceClient.unbindNow()
         eventSink = null
+        GpTomLog.detachSink()
         GpTomLog.configure(enabled = false)
     }
 

@@ -5,6 +5,7 @@ export 'enums/result_codes.dart';
 export 'enums/transaction_state.dart';
 export 'error_result.dart';
 export 'gp_tom_event.dart';
+export 'gp_tom_log_entry.dart';
 export 'gp_tom_result.dart';
 export 'init_options.dart';
 export 'merchant_info.dart';

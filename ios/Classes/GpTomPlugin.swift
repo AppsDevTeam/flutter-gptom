@@ -11,6 +11,7 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
     private let pendingStore = PendingStore()
     private let correlationStore = CorrelationStore()
+    private let logStreamHandler = GpTomLogStreamHandler()
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = GpTomPlugin()
@@ -22,6 +23,12 @@ public final class GpTomPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         let events = FlutterEventChannel(
             name: Channels.events, binaryMessenger: registrar.messenger())
         events.setStreamHandler(instance)
+
+        // Separate channel on purpose: the plugin's own log lines would otherwise
+        // show up in the typed result streams, which are projections of events.
+        let logs = FlutterEventChannel(
+            name: Channels.logs, binaryMessenger: registrar.messenger())
+        logs.setStreamHandler(instance.logStreamHandler)
 
         registrar.addApplicationDelegate(instance)
     }
