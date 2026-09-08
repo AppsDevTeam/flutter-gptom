@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.1
+
+- Kept Nexgo model field names from being renamed by R8
+
+
 ## v1.4.0
 
 - Fixed Android pending record being unreadable without originReferenceNum

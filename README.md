@@ -30,7 +30,7 @@ dependencies:
   gptom:
     git:
       url: https://github.com/AppsDevTeam/flutter-gptom.git
-      ref: v1.4.0
+      ref: v1.4.1
 ```
 
 Then run:
@@ -39,7 +39,7 @@ Then run:
 flutter pub get
 ```
 
-> Pin to a specific tag (`ref: v1.4.0`) to avoid breakage when new versions land on `main`.
+> Pin to a specific tag (`ref: v1.4.1`) to avoid breakage when new versions land on `main`.
 
 ### Contributors only
 
